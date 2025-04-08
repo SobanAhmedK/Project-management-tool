@@ -1,12 +1,13 @@
 from django.contrib.auth import authenticate
 from drf_yasg.utils import swagger_auto_schema
-
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, viewsets
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
-
-from .serializers import UserRegistrationSerializer, UserLoginSerializer
+from .models import Organization, OrganizationMembership
+from .permissions import IsOrganizationAdmin
+from .serializers import UserRegistrationSerializer, UserLoginSerializer,OrganizationSerializer
 
 # Register View (for new users)
 class UserRegistrationView(generics.CreateAPIView):
@@ -47,3 +48,27 @@ class UserLoginView(APIView):
 
             return Response({"error": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class OrganizationViewSet(viewsets.ModelViewSet):
+    serializer_class = OrganizationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Only show organizations user belongs to
+        return Organization.objects.filter(memberships__user=self.request.user)
+
+    def perform_create(self, serializer):
+        org = serializer.save(created_by=self.request.user)
+        # Add creator as admin
+        OrganizationMembership.objects.create(
+            user=self.request.user,
+            organization=org,
+            role='admin'
+        )
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            self.permission_classes = [permissions.IsAuthenticated, IsOrganizationAdmin]
+        return super().get_permissions()

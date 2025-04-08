@@ -1,1 +1,105 @@
 myenv/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+*.sqlite
+db.sqlite3
+
+# Django migration files
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Media and static files
+media/
+staticfiles/
+static/
+
+# VSCode settings
+.vscode/
+
+# Environment
+.env
+*.env
+.env.*  # Like .env.dev or .env.local
+
+# Virtual environment folders
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# MacOS
+.DS_Store
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# pip-tools
+*.txt~
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# PyCharm
+.idea/
+
+# Gunicorn
+gunicorn.pid
+
+# Build / distribution
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Node (if using frontend inside project)
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnp.*
+.pnp
+
+# System-specific
+Thumbs.db
+ehthumbs.db

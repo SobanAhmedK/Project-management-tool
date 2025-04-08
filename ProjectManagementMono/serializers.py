@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
-
+from .models import Organization, OrganizationMembership, Project
 from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -33,3 +32,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
+
+
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ['id', 'name', 'created_by', 'created_at']
+        read_only_fields = ['id', 'created_by', 'created_at']
