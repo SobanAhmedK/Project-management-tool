@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Organization, OrganizationMembership, Project
+from .models import Organization, OrganizationMembership, Project,OrganizationInvite, ProjectMembership
 from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -39,3 +39,20 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ['id', 'name', 'created_by', 'created_at']
         read_only_fields = ['id', 'created_by', 'created_at']
+
+class OrganizationInviteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationInvite
+        fields = ['email', 'role', 'organization']
+
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'description', 'organization', 'created_by']
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectMembership
+        fields = ['id', 'user', 'project']
