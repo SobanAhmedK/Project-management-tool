@@ -2,29 +2,30 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { 
-  ViewBoardsIcon, 
+  Squares2X2Icon , 
   UserGroupIcon, 
-  ChatIcon, 
+  ChatBubbleLeftIcon, 
   ChartBarIcon,
   LockClosedIcon,
-  OfficeBuildingIcon,
+  BuildingOfficeIcon ,
   CalendarIcon,
   DocumentTextIcon
-} from "@heroicons/react/outline";
+}from '@heroicons/react/24/outline'; // ✅ This works in v2
+
 
 const FeatureCard = ({ title, description, iconType, color, link }) => {
   const iconMap = {
-    board: ViewBoardsIcon,
+    board: Squares2X2Icon ,
     team: UserGroupIcon,
-    chat: ChatIcon,
+    chat: ChatBubbleLeftIcon,
     chart: ChartBarIcon,
     lock: LockClosedIcon,
-    building: OfficeBuildingIcon,
+    building: BuildingOfficeIcon ,
     calendar: CalendarIcon,
     document: DocumentTextIcon
   };
 
-  const Icon = iconMap[iconType] || ViewBoardsIcon;
+  const Icon = iconMap[iconType] || Squares2X2Icon ;
 
   // Animation variant
   const item = {

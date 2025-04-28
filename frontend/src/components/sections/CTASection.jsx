@@ -2,7 +2,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Button from "../ui/Button";
-import { LightningBoltIcon } from "@heroicons/react/outline";
+import { BoltIcon } from '@heroicons/react/24/outline';
+
 
 const CTASection = () => {
   return (
@@ -15,7 +16,7 @@ const CTASection = () => {
           viewport={{ once: true }}
           className="bg-gradient-to-br from-cyan-50 to-indigo-50 p-8 md:p-12 rounded-2xl shadow-sm text-center"
         >
-          <LightningBoltIcon className="w-12 h-12 text-cyan-600 mx-auto mb-6" />
+          <BoltIcon  className="w-12 h-12 text-cyan-600 mx-auto mb-6" />
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Ready to streamline your remote team?
           </h2>

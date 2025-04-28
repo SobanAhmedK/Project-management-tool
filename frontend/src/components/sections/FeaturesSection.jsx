@@ -2,7 +2,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import FeatureCard from "../ui/FeatureCard";
-import { ArrowRightIcon } from "@heroicons/react/outline";
 
 // Feature data specifically for your remote team project management tool
 const features = [

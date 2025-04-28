@@ -1,26 +1,34 @@
-"use client"
-
-import { useState, useEffect, useCallback } from "react"
-import { useParams } from "react-router-dom"
-import { DragDropContext } from "react-beautiful-dnd"
-import { motion } from "framer-motion"
-import TaskColumn from "../components/kanban/TaskColumn"
-import TaskDetail from "../components/kanban/TaskDetail"
-import Navbar from "../components/layout/Navbar"
-import Sidebar from "../components/layout/Sidebar"
-import { useProject } from "../context/ProjectContext"
-import AddTaskButton from "../components/kanban/AddTaskButton"
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { DragDropContext } from "react-beautiful-dnd";
+import TaskColumn from "../components/kanban/TaskColumn";
+import TaskDetail from "../components/kanban/TaskDetail";
+import Navbar from "../components/layout/Navbar";
+import Sidebar from "../components/layout/Sidebar";
+import { useProject } from "../context/ProjectContext";
+import AddTaskButton from "../components/kanban/AddTaskButton";
+import { useOrganization } from "../context/OrganizationContext";
+import ProjectMembers from "../components/kanban/ProjectMembers";
+import ProjectSettings from "../components/kanban/ProjectSettings";
+import { useAuth } from "../context/AuthContext";
 
 const ProjectBoard = () => {
-  const { projectId } = useParams()
-  const { getProject, updateTaskStatus } = useProject()
-  const project = getProject(projectId)
-  const [columns, setColumns] = useState(null)
-  const [selectedTask, setSelectedTask] = useState(null)
+  const { projectId } = useParams();
+  const { getProject, updateTaskStatus } = useProject();
+  const { currentOrganization } = useOrganization();
+  const { currentUser } = useAuth();
+  const project = getProject(projectId);
+  const [columns, setColumns] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [activeTab, setActiveTab] = useState("board");
 
-  // Initialize and sync columns with project data
-  const initializeColumns = useCallback(() => {
-    if (!project?.tasks) return null
+  // Check if current user is admin/manager
+  const isAdminOrManager = project?.members?.find(m => m.id === currentUser?.id)?.role === "admin" || 
+                          project?.members?.find(m => m.id === currentUser?.id)?.role === "manager";
+
+  // Optimize column initialization
+  const initialColumns = useMemo(() => {
+    if (!project?.tasks) return null;
 
     return {
       todo: {
@@ -28,165 +36,275 @@ const ProjectBoard = () => {
         title: "To Do",
         taskIds: project.tasks
           .filter(task => task.status === "todo")
-          .sort((a, b) => a.position - b.position)
+          .sort((a, b) => a.order - b.order)
           .map(task => task.id),
       },
       "in-progress": {
         id: "in-progress",
         title: "In Progress",
         taskIds: project.tasks
-          .filter(task => task.status === "in-progress")
-          .sort((a, b) => a.position - b.position)
+          .filter(task => task.status === "in_progress")
+          .sort((a, b) => a.order - b.order)
           .map(task => task.id),
       },
       done: {
         id: "done",
         title: "Done",
         taskIds: project.tasks
-          .filter(task => task.status === "done")
-          .sort((a, b) => a.position - b.position)
+          .filter(task => task.status === "completed")
+          .sort((a, b) => a.order - b.order)
           .map(task => task.id),
       },
-    }
-  }, [project])
+    };
+  }, [project]);
 
+  // Update columns when project changes
   useEffect(() => {
-    if (project) {
-      setColumns(initializeColumns())
+    if (initialColumns) {
+      setColumns(initialColumns);
     }
-  }, [project, initializeColumns])
+  }, [initialColumns]);
 
-  const handleDragEnd = async (result) => {
-    if (!result.destination || !columns) return
+  const handleDragStart = () => {
+    // Minimal operations during drag start
+  };
 
-    const { source, destination, draggableId } = result
+  const handleDragEnd = useCallback(async (result) => {
+    if (!result.destination || !columns) return;
+
+    const { source, destination, draggableId } = result;
 
     // Dropped in the same position
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) {
-      return
+      return;
     }
 
-    const startColumn = columns[source.droppableId]
-    const finishColumn = columns[destination.droppableId]
+    const startColumn = columns[source.droppableId];
+    const finishColumn = columns[destination.droppableId];
 
     // Moving within the same column
     if (startColumn === finishColumn) {
-      const newTaskIds = Array.from(startColumn.taskIds)
-      newTaskIds.splice(source.index, 1)
-      newTaskIds.splice(destination.index, 0, draggableId)
+      const newTaskIds = Array.from(startColumn.taskIds);
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, draggableId);
 
       const newColumn = {
         ...startColumn,
         taskIds: newTaskIds,
-      }
+      };
 
-      setColumns({
-        ...columns,
+      setColumns(prev => ({
+        ...prev,
         [newColumn.id]: newColumn,
-      })
+      }));
 
-      // Update positions in the database
-      await updateTaskPositions(newColumn.taskIds)
+      setTimeout(() => {
+        updateTaskPositions(newColumn.taskIds);
+      }, 10);
     } else {
       // Moving to a different column
-      const startTaskIds = Array.from(startColumn.taskIds)
-      startTaskIds.splice(source.index, 1)
+      const startTaskIds = Array.from(startColumn.taskIds);
+      startTaskIds.splice(source.index, 1);
       const newStart = {
         ...startColumn,
         taskIds: startTaskIds,
-      }
+      };
 
-      const finishTaskIds = Array.from(finishColumn.taskIds)
-      finishTaskIds.splice(destination.index, 0, draggableId)
+      const finishTaskIds = Array.from(finishColumn.taskIds);
+      finishTaskIds.splice(destination.index, 0, draggableId);
       const newFinish = {
         ...finishColumn,
         taskIds: finishTaskIds,
-      }
+      };
 
-      setColumns({
-        ...columns,
+      setColumns(prev => ({
+        ...prev,
         [newStart.id]: newStart,
         [newFinish.id]: newFinish,
-      })
+      }));
 
-      // Update both status and positions
-      await Promise.all([
-        updateTaskStatus(draggableId, finishColumn.id),
-        updateTaskPositions(newStart.taskIds, startColumn.id),
-        updateTaskPositions(newFinish.taskIds, finishColumn.id),
-      ])
+      const statusMap = {
+        "todo": "todo",
+        "in-progress": "in_progress",
+        "done": "completed"
+      };
+      
+      setTimeout(() => {
+        const taskToUpdate = project.tasks.find(t => t.id === draggableId);
+        if (taskToUpdate) {
+          taskToUpdate.status = statusMap[finishColumn.id];
+        }
+        
+        Promise.all([
+          updateTaskStatus(draggableId, statusMap[finishColumn.id]),
+          updateTaskPositions(newStart.taskIds, startColumn.id),
+          updateTaskPositions(newFinish.taskIds, finishColumn.id),
+        ]);
+      }, 10);
     }
-  }
+  }, [columns, project, updateTaskStatus]);
 
-  const updateTaskPositions = async (taskIds, columnId) => {
-    // Implement this function in your ProjectContext to update task positions
-    // This should update the 'position' field of each task based on their index
-  }
+  const updateTaskPositions = useCallback((taskIds, columnId) => {
+    // Database update implementation would go here
+    setProjects(prevProjects => 
+      prevProjects.map(project => {
+        const updatedTasks = project.tasks.map(task => {
+          const newIndex = taskIds.indexOf(task.id);
+          if (newIndex !== -1) {
+            return { ...task, order: newIndex };
+          }
+          return task;
+        });
+        return { ...project, tasks: updatedTasks };
+      })
+    );
+  }, []);
 
-  const handleTaskClick = (taskId) => {
-    const task = project.tasks.find(t => t.id === taskId)
-    setSelectedTask(task)
-  }
+  const handleTaskClick = useCallback((taskId) => {
+    const task = project?.tasks.find(t => t.id === taskId);
+    setSelectedTask(task);
+  }, [project]);
 
-  const closeTaskDetail = () => {
-    setSelectedTask(null)
-  }
+  const closeTaskDetail = useCallback(() => {
+    setSelectedTask(null);
+  }, []);
+
+  // Memoize task lookup for better performance
+  const columnTasks = useMemo(() => {
+    if (!columns || !project?.tasks) return {};
+    
+    const result = {};
+    Object.keys(columns).forEach(columnId => {
+      result[columnId] = columns[columnId].taskIds
+        .map(taskId => project.tasks.find(task => task.id === taskId))
+        .filter(Boolean);
+    });
+    
+    return result;
+  }, [columns, project]);
 
   if (!project || !columns) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center">
+          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading project...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar title={project.name} />
-        <motion.div
-          className="flex-1 overflow-x-auto p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">{project.name} Board</h1>
-            <AddTaskButton projectId={projectId} />
+        <Navbar 
+          title={currentOrganization 
+            ? `${currentOrganization.name} / ${project.name}` 
+            : project.name
+          } 
+        />
+        
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6">
+            <nav className="flex space-x-8">
+              <button
+                onClick={() => setActiveTab("board")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "board"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Board
+              </button>
+              <button
+                onClick={() => setActiveTab("members")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "members"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Members
+              </button>
+              {isAdminOrManager && (
+                <button
+                  onClick={() => setActiveTab("settings")}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === "settings"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  Settings
+                </button>
+              )}
+            </nav>
           </div>
+        </div>
 
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex space-x-4 h-[calc(100vh-180px)] min-w-max">
-              {Object.values(columns).map((column) => {
-                const tasks = column.taskIds
-                  .map(taskId => project.tasks.find(task => task.id === taskId))
-                  .filter(Boolean)
-                return (
-                  <TaskColumn
-                    key={column.id}
-                    column={column}
-                    tasks={tasks}
-                    onTaskClick={handleTaskClick}
-                  />
-                )
-              })}
-            </div>
-          </DragDropContext>
-        </motion.div>
+        <div className="flex-1 overflow-x-auto p-6">
+          <div className="max-w-7xl mx-auto">
+            {activeTab === "board" ? (
+              <>
+                <div className="flex justify-between items-center mb-6">
+                  <h1 className="text-xl font-bold text-gray-800">
+                    {project.name} Board
+                  </h1>
+                  <AddTaskButton projectId={projectId} />
+                </div>
+
+                <div className="mb-8">
+                  <DragDropContext 
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <div className="flex space-x-4 h-[calc(100vh-180px)] min-w-max pb-6">
+                      {Object.values(columns).map((column, index) => (
+                        <TaskColumn
+                          key={column.id}
+                          column={column}
+                          tasks={columnTasks[column.id] || []}
+                          onTaskClick={handleTaskClick}
+                          index={index}
+                        />
+                      ))}
+                    </div>
+                  </DragDropContext>
+                </div>
+              </>
+            ) : activeTab === "members" ? (
+              <ProjectMembers />
+            ) : (
+              <ProjectSettings project={project} />
+            )}
+          </div>
+        </div>
       </div>
 
       {selectedTask && (
         <TaskDetail
           task={selectedTask}
           onClose={closeTaskDetail}
+          project={project}
           onStatusChange={(newStatus) => {
-            updateTaskStatus(selectedTask.id, newStatus)
-            closeTaskDetail()
+            const statusMap = {
+              "todo": "todo",
+              "in-progress": "in_progress",
+              "done": "completed"
+            };
+            updateTaskStatus(selectedTask.id, statusMap[newStatus]);
+            closeTaskDetail();
           }}
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ProjectBoard
+export default ProjectBoard;

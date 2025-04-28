@@ -1,192 +1,291 @@
-"use client"
-
-import { useState } from "react"
-import { Link, useLocation } from "react-router-dom"
-import { motion } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { Link, useLocation, useParams } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
 import {
-  HomeIcon,
-  ViewBoardsIcon,
-  UserGroupIcon,
-  ChatIcon,
-  CalendarIcon,
-  CogIcon,
+  HomeModernIcon as HomeIcon,
+  Squares2X2Icon as ViewBoardsIcon,
+  BuildingOffice2Icon as OrganizationIcon,
   ChevronDownIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/outline"
+  Cog6ToothIcon as CogIcon,
+  UserIcon,
+  UsersIcon,
+  SunIcon,
+} from "@heroicons/react/24/outline"
+import { useProject } from "@context/ProjectContext"
+import { useOrganization } from "@context/OrganizationContext"
+import { useAuth } from "@context/AuthContext"
 
 const Sidebar = () => {
   const location = useLocation()
+  const { orgId } = useParams()
+  const { currentUser } = useAuth()
+  const { getProjects } = useProject()
+  const { getOrganizations } = useOrganization()
+  
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [expandedMenus, setExpandedMenus] = useState({
     projects: true,
-    organizations: false,
+    organizations: true,
   })
+  const [visibleProjects, setVisibleProjects] = useState(5)
+  const [visibleOrgs, setVisibleOrgs] = useState(5)
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Get data
+  const allProjects = getProjects()
+  const allOrganizations = getOrganizations()
+
+  // Click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowSettingsDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Reset visible counts when data changes
+  useEffect(() => {
+    setVisibleProjects(5)
+    setVisibleOrgs(5)
+  }, [allProjects.length, allOrganizations.length])
 
   const toggleMenu = (menu) => {
-    setExpandedMenus({
-      ...expandedMenus,
-      [menu]: !expandedMenus[menu],
-    })
+    setExpandedMenus(prev => ({ ...prev, [menu]: !prev[menu] }))
   }
 
-  // Mock data - would come from context in a real app
-  const projects = [
-    { id: "project1", name: "Website Redesign" },
-    { id: "project2", name: "Mobile App" },
-    { id: "project3", name: "Marketing Campaign" },
-  ]
+  const showMoreProjects = () => setVisibleProjects(prev => prev + 5)
+  const showMoreOrgs = () => setVisibleOrgs(prev => prev + 5)
 
-  const organizations = [
-    { id: "org1", name: "Design Team" },
-    { id: "org2", name: "Development Team" },
-  ]
-
-  const isActive = (path) => {
-    return location.pathname === path
-  }
+  const isActive = (path) => location.pathname === path
+  const isSettingsActive = location.pathname.includes('/settings')
 
   return (
     <motion.div
-      className={`bg-white border-r border-gray-200 flex flex-col ${isCollapsed ? "w-16" : "w-64"}`}
-      animate={{ width: isCollapsed ? 64 : 256 }}
-      transition={{ duration: 0.2 }}
+      className={`bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
+      animate={{ width: isCollapsed ? 80 : 256 }}
+      transition={{ type: "spring", damping: 20 }}
+      ref={dropdownRef}
     >
+      {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        {!isCollapsed && <h1 className="text-xl font-bold text-indigo-600">TaskFlow</h1>}
+        {!isCollapsed && (
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
+              TaskSync<span className="text-indigo-600">.</span>
+            </h1>
+          </motion.div>
+        )}
         <button
-          className={`p-1 rounded-md hover:bg-gray-100 ${isCollapsed ? "mx-auto" : ""}`}
           onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`p-1.5 rounded-lg hover:bg-gray-100 ${isCollapsed ? "mx-auto" : ""}`}
         >
-          {isCollapsed ? (
-            <ChevronRightIcon className="w-5 h-5 text-gray-500" />
-          ) : (
-            <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-          )}
+          <ChevronDownIcon
+            className={`w-5 h-5 text-gray-500 transition-transform ${
+              isCollapsed ? "rotate-90" : "-rotate-90"
+            }`}
+          />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
-          <li>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto py-4 px-2">
+        <ul className="space-y-1">
+          {/* Dashboard */}
+          <motion.li whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link
               to="/dashboard"
-              className={`flex items-center px-3 py-2 rounded-md ${
-                isActive("/dashboard") ? "bg-indigo-50 text-indigo-600" : "text-gray-700 hover:bg-gray-100"
+              className={`flex items-center px-3 py-2.5 rounded-lg ${
+                isActive("/dashboard")
+                  ? "bg-gradient-to-r from-cyan-50 to-indigo-50 text-cyan-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-50"
               }`}
             >
               <HomeIcon className="w-5 h-5 mr-3" />
               {!isCollapsed && <span>Dashboard</span>}
             </Link>
-          </li>
+          </motion.li>
 
+          {/* Projects Section */}
           <li className="mt-4">
             <div
-              className={`flex items-center justify-between px-3 py-2 text-gray-500 ${!isCollapsed ? "cursor-pointer hover:bg-gray-100 rounded-md" : ""}`}
               onClick={() => !isCollapsed && toggleMenu("projects")}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer ${
+                !isCollapsed ? "text-gray-600 hover:bg-gray-50" : "justify-center"
+              }`}
             >
               <div className="flex items-center">
                 <ViewBoardsIcon className="w-5 h-5 mr-3" />
-                {!isCollapsed && <span>Projects</span>}
+                {!isCollapsed && <span>Projects ({allProjects.length})</span>}
               </div>
               {!isCollapsed && (
                 <ChevronDownIcon
-                  className={`w-4 h-4 transition-transform ${expandedMenus.projects ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 transition-transform ${
+                    expandedMenus.projects ? "rotate-180" : ""
+                  }`}
                 />
               )}
             </div>
 
-            {!isCollapsed && expandedMenus.projects && (
-              <ul className="mt-1 pl-8 space-y-1">
-                {projects.map((project) => (
-                  <li key={project.id}>
-                    <Link
-                      to={`/project/${project.id}`}
-                      className={`block px-3 py-1.5 rounded-md text-sm ${
-                        isActive(`/project/${project.id}`)
-                          ? "bg-indigo-50 text-indigo-600"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
+            <AnimatePresence>
+              {!isCollapsed && expandedMenus.projects && (
+                <motion.ul
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-1 pl-8 space-y-1 overflow-hidden"
+                >
+                  {allProjects.slice(0, visibleProjects).map((project) => (
+                    <motion.li
+                      key={project.id}
+                      whileHover={{ x: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     >
-                      {project.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+                      <Link
+                        to={`/project/${project.id}`}
+                        className={`flex items-center px-3 py-1.5 rounded-md text-sm ${
+                          isActive(`/project/${project.id}`)
+                            ? "bg-indigo-50 text-indigo-600 font-medium"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-indigo-500 mr-2" />
+                        <span className="truncate">{project.name}</span>
+                      </Link>
+                    </motion.li>
+                  ))}
+                  {allProjects.length > visibleProjects && (
+                    <motion.li whileHover={{ x: 5 }} className="mt-1">
+                      <button
+                        onClick={showMoreProjects}
+                        className="flex items-center text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 w-full"
+                      >
+                        <span className="text-xs mr-2">
+                          +{allProjects.length - visibleProjects} more
+                        </span>
+                      </button>
+                    </motion.li>
+                  )}
+                </motion.ul>
+              )}
+            </AnimatePresence>
           </li>
 
-          <li className="mt-2">
+          {/* Organizations Section */}
+          <li className="mt-4">
             <div
-              className={`flex items-center justify-between px-3 py-2 text-gray-500 ${!isCollapsed ? "cursor-pointer hover:bg-gray-100 rounded-md" : ""}`}
               onClick={() => !isCollapsed && toggleMenu("organizations")}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer ${
+                !isCollapsed ? "text-gray-600 hover:bg-gray-50" : "justify-center"
+              }`}
             >
               <div className="flex items-center">
-                <UserGroupIcon className="w-5 h-5 mr-3" />
-                {!isCollapsed && <span>Organizations</span>}
+                <OrganizationIcon className="w-5 h-5 mr-3" />
+                {!isCollapsed && <span>Organizations ({allOrganizations.length})</span>}
               </div>
               {!isCollapsed && (
                 <ChevronDownIcon
-                  className={`w-4 h-4 transition-transform ${expandedMenus.organizations ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 transition-transform ${
+                    expandedMenus.organizations ? "rotate-180" : ""
+                  }`}
                 />
               )}
             </div>
 
-            {!isCollapsed && expandedMenus.organizations && (
-              <ul className="mt-1 pl-8 space-y-1">
-                {organizations.map((org) => (
-                  <li key={org.id}>
-                    <Link
-                      to={`/organization/${org.id}`}
-                      className={`block px-3 py-1.5 rounded-md text-sm ${
-                        isActive(`/organization/${org.id}`)
-                          ? "bg-indigo-50 text-indigo-600"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
+            <AnimatePresence>
+              {!isCollapsed && expandedMenus.organizations && (
+                <motion.ul
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-1 pl-8 space-y-1 overflow-hidden"
+                >
+                  {allOrganizations.slice(0, visibleOrgs).map((org) => (
+                    <motion.li
+                      key={org.id}
+                      whileHover={{ x: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     >
-                      {org.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-
-          <li className="mt-2">
-            <Link
-              to="/chat"
-              className={`flex items-center px-3 py-2 rounded-md ${
-                isActive("/chat") ? "bg-indigo-50 text-indigo-600" : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <ChatIcon className="w-5 h-5 mr-3" />
-              {!isCollapsed && <span>Chat</span>}
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              to="/calendar"
-              className={`flex items-center px-3 py-2 rounded-md ${
-                isActive("/calendar") ? "bg-indigo-50 text-indigo-600" : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <CalendarIcon className="w-5 h-5 mr-3" />
-              {!isCollapsed && <span>Calendar</span>}
-            </Link>
+                      <Link
+                        to={`/organization/${org.id}`}
+                        className={`flex items-center px-3 py-1.5 rounded-md text-sm ${
+                          location.pathname.startsWith(`/organization/${org.id}`) &&
+                          !location.pathname.includes('settings')
+                            ? "bg-cyan-50 text-cyan-600 font-medium"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-cyan-500 mr-2" />
+                        <span className="truncate">{org.name}</span>
+                      </Link>
+                    </motion.li>
+                  ))}
+                  {allOrganizations.length > visibleOrgs && (
+                    <motion.li whileHover={{ x: 5 }} className="mt-1">
+                      <button
+                        onClick={showMoreOrgs}
+                        className="flex items-center text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 w-full"
+                      >
+                        <span className="text-xs mr-2">
+                          +{allOrganizations.length - visibleOrgs} more
+                        </span>
+                      </button>
+                    </motion.li>
+                  )}
+                </motion.ul>
+              )}
+            </AnimatePresence>
           </li>
         </ul>
       </div>
 
-      <div className="p-4 border-t border-gray-200">
-        <Link
-          to="/settings"
-          className={`flex items-center px-3 py-2 rounded-md ${
-            isActive("/settings") ? "bg-indigo-50 text-indigo-600" : "text-gray-700 hover:bg-gray-100"
+      {/* Settings Section */}
+      <div className="p-4 border-t border-gray-200 relative">
+        <button
+          onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+          className={`flex items-center w-full px-3 py-2.5 rounded-lg ${
+            isSettingsActive
+              ? "bg-gradient-to-r from-cyan-50 to-indigo-50 text-cyan-600 font-medium"
+              : "text-gray-600 hover:bg-gray-50"
           }`}
         >
           <CogIcon className="w-5 h-5 mr-3" />
           {!isCollapsed && <span>Settings</span>}
-        </Link>
+        </button>
+
+        {/* Settings Dropdown */}
+        {!isCollapsed && showSettingsDropdown && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute left-4 right-4 bottom-full mb-2 bg-white rounded-lg shadow-lg z-50 border border-gray-200"
+          >
+            <Link
+              to="/profile/settings"
+              className="flex items-center px-4 py-2 hover:bg-gray-50 text-sm"
+              onClick={() => setShowSettingsDropdown(false)}
+            >
+              <UserIcon className="w-4 h-4 mr-2" />
+              User Profile
+            </Link>
+
+          
+
+            <Link
+              to=""
+              className="flex items-center px-4 py-2 hover:bg-gray-50 text-sm"
+              onClick={() => setShowSettingsDropdown(false)}
+            >
+              <SunIcon className="w-4 h-4 mr-2" />
+              App Preferences
+            </Link>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   )

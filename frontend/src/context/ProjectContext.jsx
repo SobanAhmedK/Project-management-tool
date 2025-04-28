@@ -1,144 +1,159 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState } from "react";
 
 // Create context
-const ProjectContext = createContext()
+const ProjectContext = createContext();
 
-// Mock project data - in a real app, this would come from an API
+// Mock data aligned with your Django models
 const mockProjects = [
   {
     id: "project1",
     name: "Website Redesign",
     description: "Redesign the company website with a modern look and feel",
-    organizationId: "org1",
+    organization: {
+      id: "org1",
+      name: "Acme Corp",
+    },
+    created_by: {
+      id: "user1",
+      full_name: "John Doe",
+      email: "john@example.com",
+    },
     members: [
-      { id: "user1", name: "John Doe", role: "Project Manager" },
-      { id: "user2", name: "Jane Smith", role: "Designer" },
+      { id: "user1", full_name: "John Doe", role: "manager" },
+      { id: "user2", full_name: "Jane Smith", role: "employee" },
+      { id: "user3", full_name: "Jane Smith", role: "employee" },
     ],
     tasks: [
       {
         id: "task1",
         title: "Create wireframes",
-        description: "Design initial wireframes for homepage and product pages",
-        status: "done",
+        description: "Design wireframes for homepage and product pages",
+        status: "completed",
         priority: "high",
-        assignee: { id: "user2", name: "Jane Smith" },
-        dueDate: "2023-06-15",
+        assigned_to: { id: "user2", full_name: "Jane Smith" },
+        created_by: { id: "user1", full_name: "John Doe" },
+        due_date: "2023-06-15",
+        order: 0,
+        created_at: "2023-06-01T10:00:00Z",
+        updated_at: "2023-06-10T14:30:00Z",
         comments: [
           {
             id: "comment1",
-            text: "I've completed the homepage wireframes",
-            author: { id: "user2", name: "Jane Smith" },
-            createdAt: "2023-06-10T14:30:00Z",
+            comment_text: "I've completed the homepage wireframes",
+            commented_by: { id: "user2", full_name: "Jane Smith" },
+            created_at: "2023-06-10T14:30:00Z",
           },
         ],
-        createdAt: "2023-06-01T10:00:00Z",
       },
       {
         id: "task2",
         title: "Design mockups",
-        description: "Create high-fidelity mockups based on approved wireframes",
-        status: "in-progress",
+        description: "High-fidelity mockups based on wireframes",
+        status: "in_progress",
         priority: "medium",
-        assignee: { id: "user2", name: "Jane Smith" },
-        dueDate: "2023-06-30",
+        assigned_to: { id: "user2", full_name: "Jane Smith" },
+        created_by: { id: "user1", full_name: "John Doe" },
+        due_date: "2023-06-30",
+        order: 1,
+        created_at: "2023-06-16T09:00:00Z",
+        updated_at: "2023-06-17T09:00:00Z",
         comments: [],
-        createdAt: "2023-06-16T09:00:00Z",
-      },
-      {
-        id: "task3",
-        title: "Develop homepage",
-        description: "Implement the homepage design in HTML/CSS/JS",
-        status: "todo",
-        priority: "medium",
-        assignee: null,
-        dueDate: "2023-07-15",
-        comments: [],
-        createdAt: "2023-06-16T09:30:00Z",
-      },
-      {
-        id: "task4",
-        title: "Content migration",
-        description: "Move content from old site to new site",
-        status: "todo",
-        priority: "low",
-        assignee: null,
-        dueDate: "2023-07-30",
-        comments: [],
-        createdAt: "2023-06-16T10:00:00Z",
       },
     ],
   },
   {
     id: "project2",
     name: "Mobile App",
-    description: "Develop a mobile app for iOS and Android",
-    organizationId: "org2",
-    members: [{ id: "user1", name: "John Doe", role: "Project Manager" }],
+    description: "iOS and Android app development",
+    organization: {
+      id: "org2",
+      name: "TechFlow",
+    },
+    created_by: {
+      id: "user1",
+      full_name: "John Doe",
+    },
+    members: [{ id: "user1", full_name: "John Doe", role: "admin" }],
     tasks: [
       {
-        id: "task5",
+        id: "task3",
         title: "App architecture",
-        description: "Design the app architecture and technology stack",
-        status: "in-progress",
-        priority: "high",
-        assignee: { id: "user1", name: "John Doe" },
-        dueDate: "2023-06-20",
+        description: "Plan architecture and stack",
+        status: "in_progress",
+        priority: "low",
+        assigned_to: { id: "user1", full_name: "John Doe" },
+        created_by: { id: "user1", full_name: "John Doe" },
+        due_date: "2023-06-20",
+        order: 0,
+        created_at: "2023-06-05T11:00:00Z",
+        updated_at: "2023-06-06T11:00:00Z",
         comments: [],
-        createdAt: "2023-06-05T11:00:00Z",
-      },
-      {
-        id: "task6",
-        title: "UI Design",
-        description: "Create UI design for the mobile app",
-        status: "todo",
-        priority: "medium",
-        assignee: null,
-        dueDate: "2023-07-10",
-        comments: [],
-        createdAt: "2023-06-05T11:30:00Z",
       },
     ],
   },
-]
+];
 
 export const ProjectProvider = ({ children }) => {
-  const [projects, setProjects] = useState(mockProjects)
+  const [projects, setProjects] = useState(mockProjects);
 
-  const getProjects = () => {
-    return projects
-  }
+  const getProjects = () => projects || [];
 
-  const getProject = (projectId) => {
-    return projects.find((project) => project.id === projectId)
-  }
+  const getProject = (projectId) =>
+    projects.find((project) => project.id === projectId);
 
   const addProject = (newProject) => {
-    setProjects([...projects, { ...newProject, id: Date.now().toString() }])
-  }
+    if (!newProject.name || !newProject.organization?.id) {
+      throw new Error("Project name and organization ID are required");
+    }
+    const id = `project-${Date.now()}`;
+    const createdProject = {
+      id,
+      name: newProject.name,
+      description: newProject.description || "",
+      organization: {
+        id: newProject.organization.id,
+        name: newProject.organization.name || "Unknown Organization",
+      },
+      created_by: newProject.created_by || {
+        id: "user1",
+        full_name: "Unknown User",
+        email: "unknown@example.com",
+      },
+      members: newProject.members || [],
+      tasks: newProject.tasks || [],
+    };
+    setProjects([...projects, createdProject]);
+    return createdProject;
+  };
 
   const updateProject = (updatedProject) => {
-    setProjects(projects.map((project) => (project.id === updatedProject.id ? updatedProject : project)))
-  }
+    if (!updatedProject.id || !updatedProject.name) {
+      throw new Error("Project ID and name are required for update");
+    }
+    setProjects(
+      projects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+    );
+    return updatedProject;
+  };
 
   const deleteProject = (projectId) => {
-    setProjects(projects.filter((project) => project.id !== projectId))
-  }
+    setProjects(projects.filter((p) => p.id !== projectId));
+  };
 
   const addTask = (projectId, newTask) => {
     setProjects(
-      projects.map((project) => {
-        if (project.id === projectId) {
-          return {
-            ...project,
-            tasks: [...project.tasks, newTask],
-          }
-        }
-        return project
-      }),
-    )
-  }
+      projects.map((project) =>
+        project.id === projectId
+          ? {
+              ...project,
+              tasks: [...project.tasks, newTask],
+            }
+          : project
+      )
+    );
+  };
 
   const updateTask = (updatedTask) => {
     setProjects(
@@ -146,13 +161,15 @@ export const ProjectProvider = ({ children }) => {
         if (project.tasks.some((task) => task.id === updatedTask.id)) {
           return {
             ...project,
-            tasks: project.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
-          }
+            tasks: project.tasks.map((task) =>
+              task.id === updatedTask.id ? updatedTask : task
+            ),
+          };
         }
-        return project
-      }),
-    )
-  }
+        return project;
+      })
+    );
+  };
 
   const updateTaskStatus = (taskId, newStatus) => {
     setProjects(
@@ -160,27 +177,28 @@ export const ProjectProvider = ({ children }) => {
         if (project.tasks.some((task) => task.id === taskId)) {
           return {
             ...project,
-            tasks: project.tasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task)),
-          }
+            tasks: project.tasks.map((task) =>
+              task.id === taskId ? { ...task, status: newStatus } : task
+            ),
+          };
         }
-        return project
-      }),
-    )
-  }
+        return project;
+      })
+    );
+  };
 
   const deleteTask = (taskId) => {
     setProjects(
-      projects.map((project) => {
-        if (project.tasks.some((task) => task.id === taskId)) {
-          return {
-            ...project,
-            tasks: project.tasks.filter((task) => task.id !== taskId),
-          }
-        }
-        return project
-      }),
-    )
-  }
+      projects.map((project) =>
+        project.tasks.some((task) => task.id === taskId)
+          ? {
+              ...project,
+              tasks: project.tasks.filter((task) => task.id !== taskId),
+            }
+          : project
+      )
+    );
+  };
 
   const value = {
     getProjects,
@@ -192,11 +210,11 @@ export const ProjectProvider = ({ children }) => {
     updateTask,
     updateTaskStatus,
     deleteTask,
-  }
+  };
 
-  return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
-}
+  return (
+    <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>
+  );
+};
 
-export const useProject = () => {
-  return useContext(ProjectContext)
-}
+export const useProject = () => useContext(ProjectContext);

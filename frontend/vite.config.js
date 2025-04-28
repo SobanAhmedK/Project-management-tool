@@ -12,7 +12,7 @@ export default defineConfig({
       "@pages": path.resolve(__dirname, "./src/pages"),
       "@context": path.resolve(__dirname, "./src/context"),
       "@hooks": path.resolve(__dirname, "./src/hooks"),
-      "@utils": path.resolve(__dirname, "./src/utils"),
+      "@utils": path.resolve(__dirname, "./src/utils/index.jsx"),
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@styles": path.resolve(__dirname, "./src/styles"),
       "@layouts": path.resolve(__dirname, "./src/components/layout"),

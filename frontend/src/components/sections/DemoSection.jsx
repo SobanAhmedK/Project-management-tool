@@ -2,7 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Button from "../ui/Button";
-import { PlayIcon } from "@heroicons/react/outline";
+import { PlayCircleIcon } from '@heroicons/react/24/outline';
 
 const DemoSection = () => {
   return (
@@ -37,7 +37,7 @@ const DemoSection = () => {
             <Button
               variant="primary"
               className="!p-4"
-              icon={<PlayIcon className="w-6 h-6" />}
+              icon={<PlayCircleIcon className="w-6 h-6" />}
             />
           </div>
           <img

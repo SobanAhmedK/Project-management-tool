@@ -1,178 +1,367 @@
-"use client"
-
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { PlusIcon, XIcon } from "@heroicons/react/outline"
+import { 
+  PlusIcon, 
+  XMarkIcon, 
+  CheckIcon,
+  ArrowPathIcon,
+  UserCircleIcon,
+  CalendarDaysIcon,
+  Bars3Icon,
+  ArrowUpIcon,
+  ArrowDownIcon
+} from "@heroicons/react/24/outline"
 import { useProject } from "../../context/ProjectContext"
 
 const AddTaskButton = ({ projectId }) => {
-  const { addTask } = useProject()
+  const { addTask, getProject } = useProject()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     status: "todo",
     priority: "medium",
-    assignee: null,
-    dueDate: "",
+    assigned_to: null,
+    due_date: "",
   })
+  const [expandedSection, setExpandedSection] = useState("basic")
 
-  const handleSubmit = (e) => {
+  const project = getProject(projectId)
+  const members = project?.members || []
+
+  const priorityOptions = [
+    { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
+    { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
+    { value: "high", label: "High", color: "bg-red-100 text-red-800" }
+  ]
+
+  const statusOptions = [
+    { value: "todo", label: "To Do", color: "bg-gray-100 text-gray-800" },
+    { value: "in-progress", label: "In Progress", color: "bg-blue-100 text-blue-800" },
+    { value: "done", label: "Done", color: "bg-green-100 text-green-800" }
+  ]
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!newTask.title.trim()) return
 
-    addTask(projectId, {
-      ...newTask,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-    })
+    setIsSubmitting(true)
 
-    setNewTask({
-      title: "",
-      description: "",
-      status: "todo",
-      priority: "medium",
-      assignee: null,
-      dueDate: "",
-    })
+    try {
+      await addTask(projectId, {
+        ...newTask,
+        id: Date.now().toString(),
+        created_at: new Date().toISOString(),
+        order: project?.tasks?.length || 0,
+      })
 
-    setIsModalOpen(false)
+      setIsSuccess(true)
+      
+      setTimeout(() => {
+        setIsSubmitting(false)
+        setIsSuccess(false)
+        setIsModalOpen(false)
+        setNewTask({
+          title: "",
+          description: "",
+          status: "todo",
+          priority: "medium",
+          assigned_to: null,
+          due_date: "",
+        })
+        setExpandedSection("basic")
+      }, 1000)
+    } catch (error) {
+      setIsSubmitting(false)
+      console.error("Error adding task:", error)
+    }
+  }
+
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section)
   }
 
   return (
     <>
+      {/* Floating Add Button */}
       <motion.button
-        className="btn-primary flex items-center"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        className="z-[9999] fixed bottom-6 right-6 z-40 p-4 bg-gradient-to-r from-cyan-400 to-indigo-800 text-white rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center"
+        whileHover={{ scale: 1.1, rotate: 180 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setIsModalOpen(true)}
-      >
-        <PlusIcon className="w-5 h-5 mr-1" />
-        Add Task
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      > <div className="font-bold">Add Task </div>
+        <PlusIcon className="w-6 h-6" />
+
       </motion.button>
 
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="z-[9999] fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsModalOpen(false)}
+            onClick={() => !isSubmitting && setIsModalOpen(false)}
           >
             <motion.div
-              className="bg-white rounded-lg shadow-xl w-full max-w-md"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200"
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center p-4 border-b">
-                <h2 className="text-xl font-semibold text-gray-800">Add New Task</h2>
-                <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsModalOpen(false)}>
-                  <XIcon className="w-5 h-5" />
-                </button>
+              {/* Header with gradient */}
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-5 text-white">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold">Create New Task</h2>
+                  <button 
+                    className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                    onClick={() => !isSubmitting && setIsModalOpen(false)}
+                    disabled={isSubmitting}
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <motion.div 
+                  className="flex space-x-2 mt-4 overflow-x-auto pb-2 scrollbar-hide"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {["basic", "details", "assign"].map((section) => (
+                    <button
+                      key={section}
+                      onClick={() => toggleSection(section)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                        expandedSection === section 
+                          ? "bg-white text-blue-600" 
+                          : "bg-white/20 hover:bg-white/30"
+                      }`}
+                    >
+                      {section === "basic" && "Basic Info"}
+                      {section === "details" && "Details"}
+                      {section === "assign" && "Assignment"}
+                    </button>
+                  ))}
+                </motion.div>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-4">
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    className="input min-h-[100px]"
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select
-                      className="input"
-                      value={newTask.status}
-                      onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
-                    >
-                      <option value="todo">To Do</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="review">Review</option>
-                      <option value="done">Done</option>
-                    </select>
+              <form onSubmit={handleSubmit} className="p-5">
+                {/* Basic Info Section */}
+                <motion.div
+                  animate={{
+                    height: expandedSection === "basic" ? "auto" : 0,
+                    opacity: expandedSection === "basic" ? 1 : 0,
+                    marginBottom: expandedSection === "basic" ? "1.5rem" : 0
+                  }}
+                  transition={{ type: "spring", damping: 25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Task Title</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pl-10"
+                        value={newTask.title}
+                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                        placeholder="What needs to be done?"
+                        required
+                        disabled={isSubmitting}
+                        autoFocus
+                      />
+                      <Bars3Icon className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                    <select
-                      className="input"
-                      value={newTask.priority}
-                      onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
-                    <select
-                      className="input"
-                      value={newTask.assignee?.id || ""}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setNewTask({
-                            ...newTask,
-                            assignee: {
-                              id: e.target.value,
-                              name: e.target.options[e.target.selectedIndex].text,
-                            },
-                          })
-                        } else {
-                          setNewTask({
-                            ...newTask,
-                            assignee: null,
-                          })
-                        }
-                      }}
-                    >
-                      <option value="">Unassigned</option>
-                      <option value="user1">John Doe</option>
-                      <option value="user2">Jane Smith</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                    <input
-                      type="date"
-                      className="input"
-                      value={newTask.dueDate}
-                      onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition min-h-[100px]"
+                      value={newTask.description}
+                      onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                      placeholder="Add details (optional)"
+                      disabled={isSubmitting}
                     />
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="flex justify-end space-x-2">
-                  <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary">
-                    Create Task
-                  </button>
+                {/* Details Section */}
+                <motion.div
+                  animate={{
+                    height: expandedSection === "details" ? "auto" : 0,
+                    opacity: expandedSection === "details" ? 1 : 0,
+                    marginBottom: expandedSection === "details" ? "1.5rem" : 0
+                  }}
+                  transition={{ type: "spring", damping: 25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <div className="relative">
+                        <select
+                          className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
+                          value={newTask.status}
+                          onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                          disabled={isSubmitting}
+                        >
+                          {statusOptions.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                        <ArrowDownIcon className="absolute right-3 top-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                      <div className="relative">
+                        <select
+                          className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
+                          value={newTask.priority}
+                          onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                          disabled={isSubmitting}
+                        >
+                          {priorityOptions.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                        <ArrowDownIcon className="absolute right-3 top-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Assignment Section */}
+                <motion.div
+                  animate={{
+                    height: expandedSection === "assign" ? "auto" : 0,
+                    opacity: expandedSection === "assign" ? 1 : 0,
+                    marginBottom: expandedSection === "assign" ? "1.5rem" : 0
+                  }}
+                  transition={{ type: "spring", damping: 25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+                      <div className="relative">
+                        <select
+                          className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
+                          value={newTask.assigned_to?.id || ""}
+                          onChange={(e) => {
+                            const selectedMember = members.find(m => m.id === e.target.value)
+                            setNewTask({
+                              ...newTask,
+                              assigned_to: selectedMember ? { 
+                                id: selectedMember.id, 
+                                full_name: selectedMember.full_name 
+                              } : null
+                            })
+                          }}
+                          disabled={isSubmitting}
+                        >
+                          <option value="">&nbsp;&nbsp;&nbsp;Unassigned</option>
+                          {members.map(member => (
+                            <option key={member.id} value={member.id}>
+                             &nbsp;&nbsp;&nbsp; {member.full_name}
+                            </option>
+                          ))}
+                        </select>
+                        <UserCircleIcon className="absolute  left-1.5 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pl-10"
+                          value={newTask.due_date}
+                          onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                          disabled={isSubmitting}
+                        />
+                        <CalendarDaysIcon className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                  <motion.button
+                    type="button"
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium rounded-lg flex items-center"
+                    onClick={() => {
+                      const sections = ["basic", "details", "assign"]
+                      const currentIndex = sections.indexOf(expandedSection)
+                      const prevSection = currentIndex > 0 ? sections[currentIndex - 1] : null
+                      if (prevSection) setExpandedSection(prevSection)
+                    }}
+                    whileHover={{ x: -2 }}
+                    disabled={expandedSection === "basic" || isSubmitting}
+                  >
+                    <ArrowUpIcon className="w-4 h-4 mr-1" />
+                    Previous
+                  </motion.button>
+
+                  {expandedSection === "assign" ? (
+                    <motion.button 
+                      type="submit" 
+                      className={`px-6 py-3 rounded-xl text-white font-medium flex items-center justify-center min-w-[120px] ${
+                        isSubmitting 
+                          ? 'bg-blue-400' 
+                          : isSuccess 
+                            ? 'bg-green-500' 
+                            : 'bg-blue-500 hover:bg-blue-600'
+                      } transition-colors shadow-md`}
+                      whileHover={!isSubmitting && !isSuccess ? { scale: 1.03 } : {}}
+                      whileTap={!isSubmitting && !isSuccess ? { scale: 0.97 } : {}}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                          Creating...
+                        </>
+                      ) : isSuccess ? (
+                        <>
+                          <CheckIcon className="w-5 h-5 mr-1" />
+                          Task Created!
+                        </>
+                      ) : (
+                        <>
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Create Task
+                        </>
+                      )}
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      type="button"
+                      className="px-6 py-3 bg-blue-500 text-white font-medium rounded-xl flex items-center justify-center shadow-md hover:bg-blue-600"
+                      onClick={() => {
+                        const sections = ["basic", "details", "assign"]
+                        const currentIndex = sections.indexOf(expandedSection)
+                        const nextSection = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : null
+                        if (nextSection) setExpandedSection(nextSection)
+                      }}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      Next
+                      <ArrowDownIcon className="w-4 h-4 ml-2" />
+                    </motion.button>
+                  )}
                 </div>
               </form>
             </motion.div>

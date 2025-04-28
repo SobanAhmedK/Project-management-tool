@@ -48,7 +48,7 @@ export const NotificationProvider = ({ children }) => {
 
 const NotificationContainer = ({ notifications, dismissNotification }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 w-80">
+    <div className="fixed top-4 right-4 z-50  z-[99999]  space-y-2 w-80">
       <AnimatePresence>
         {notifications.map((notification) => (
           <motion.div

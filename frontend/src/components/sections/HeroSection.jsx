@@ -1,8 +1,9 @@
 // src/components/sections/HeroSection.jsx
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { SparklesIcon, ArrowRightIcon } from "@heroicons/react/outline";
+import { SparklesIcon } from '@heroicons/react/24/outline'; // ✅ This works in v2
 import Button from "../ui/Button";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
 const HeroSection = () => {
   const heroRef = useRef(null);

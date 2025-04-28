@@ -1,103 +1,120 @@
-"use client"
+
+
+
 
 import { Draggable } from "react-beautiful-dnd"
-import { motion } from "framer-motion"
-import { CalendarIcon, UserIcon, TagIcon } from "@heroicons/react/outline"
+import { memo } from "react"
+import { TagIcon, CalendarDaysIcon, UserCircleIcon, CheckCircleIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
-const TaskCard = ({ task, index, onClick }) => {
+// Memoize TaskCard to prevent unnecessary re-renders
+const TaskCard = memo(({ task, index, onClick }) => {
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case "high": 
+        return <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />
+      case "medium": 
+        return <ClockIcon className="w-4 h-4 text-yellow-500" />
+      case "low": 
+        return <CheckCircleIcon className="w-4 h-4 text-green-500" />
+      default: 
+        return <ClockIcon className="w-4 h-4 text-gray-500" />
+    }
+  }
+
   const getPriorityColor = (priority) => {
     const colors = {
-      high: "bg-red-100 text-red-800",
-      medium: "bg-yellow-100 text-yellow-800",
-      low: "bg-green-100 text-green-800",
+      high: "bg-red-50 text-red-700 border-red-200",
+      medium: "bg-yellow-50 text-yellow-700 border-yellow-200",
+      low: "bg-green-50 text-green-700 border-green-200",
     }
-    return colors[priority] || "bg-gray-100 text-gray-800"
+    return colors[priority] || "bg-gray-50 text-gray-700 border-gray-200"
   }
 
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
-        <motion.div
+        <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          onClick={onClick}
+          onClick={() => !snapshot.isDragging && onClick()}
           className={`mb-3 rounded-lg border ${
             snapshot.isDragging 
-              ? "shadow-xl bg-white border-blue-400" 
-              : "bg-white border-gray-200 hover:border-gray-300"
-          } transition-all duration-150`}
-          whileHover={{ 
-            scale: 1.02,
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-          }}
-          whileTap={{ scale: 0.98 }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ 
-            opacity: 1, 
-            y: 0,
-            scale: snapshot.isDragging ? 1.05 : 1,
-            boxShadow: snapshot.isDragging 
-              ? "0 10px 15px -3px rgba(0, 0, 0, 0.1)" 
-              : "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
-          }}
-          transition={{ 
-            type: "spring",
-            damping: 20,
-            stiffness: 300,
-            opacity: { duration: 0.2 }
-          }}
+              ? "shadow-lg border-blue-300 z-50" 
+              : "shadow-sm border-gray-200 hover:border-gray-300 hover:shadow"
+          } bg-white transition-all`}
           style={{
             ...provided.draggableProps.style,
-            transform: snapshot.isDragging
-              ? `${provided.draggableProps.style?.transform} rotate(1deg)`
+            // Simple rotation instead of complex animations
+            transform: snapshot.isDragging 
+              ? `${provided.draggableProps.style?.transform} rotate(${Math.random() > 0.5 ? 1 : -1}deg)`
               : provided.draggableProps.style?.transform,
+            zIndex: snapshot.isDragging ? 9999 : 'auto'
           }}
-          layout
         >
-          <div className="p-4">
+          <div className="p-3">
             <div className="flex justify-between items-start mb-2">
-              <h4 className="font-medium text-gray-800 text-sm line-clamp-2">
+              <h4 className="font-medium text-gray-800 text-sm line-clamp-2 flex-1 pr-2">
                 {task.title}
               </h4>
-              <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(task.priority)} shrink-0`}>
-                {task.priority}
-              </span>
+              <div className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${getPriorityColor(task.priority)} shrink-0`}>
+                {getPriorityIcon(task.priority)}
+                <span className="capitalize">{task.priority}</span>
+              </div>
             </div>
 
             {task.description && (
-              <p className="text-gray-600 text-xs mb-3 line-clamp-3">
+              <p className="text-gray-600 text-xs mb-3 line-clamp-2">
                 {task.description}
               </p>
             )}
 
-            <div className="flex items-center justify-between text-xs text-gray-500 space-x-2">
+            <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
               <div className="flex items-center truncate">
-                <UserIcon className="w-3 h-3 mr-1 shrink-0" />
-                <span className="truncate">{task.assignee?.name || "Unassigned"}</span>
+                <UserCircleIcon className="w-3 h-3 mr-1 shrink-0" />
+                <span className="truncate max-w-[120px]">
+                  {task.assigned_to?.full_name || "Unassigned"}
+                </span>
               </div>
 
               <div className="flex items-center space-x-2">
-                {task.dueDate && (
-                  <div className="flex items-center shrink-0">
-                    <CalendarIcon className="w-3 h-3 mr-1" />
-                    <span>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                {task.due_date && (
+                  <div className="flex items-center shrink-0 bg-gray-50 px-2 py-1 rounded">
+                    <CalendarDaysIcon className="w-3 h-3 mr-1" />
+                    <span>{new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                   </div>
                 )}
 
                 {task.tags?.length > 0 && (
-                  <div className="flex items-center shrink-0">
+                  <div className="flex items-center shrink-0 bg-indigo-50 text-indigo-700 px-2 py-1 rounded">
                     <TagIcon className="w-3 h-3 mr-1" />
-                    <span className="truncate max-w-[80px]">{task.tags[0]}</span>
+                    <span className="truncate max-w-[60px]">{task.tags[0]}</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        </motion.div>
+          
+          <div className="h-1 w-full rounded-b-lg overflow-hidden">
+            <div 
+              className={
+                task.status === "completed" ? "bg-green-500 h-full" :
+                task.status === "in_progress" ? "bg-indigo-500 h-full w-1/2" :
+                "bg-gray-200 h-full"
+              }
+            ></div>
+          </div>
+        </div>
       )}
     </Draggable>
   )
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for memo - only re-render if these props change
+  return prevProps.task.id === nextProps.task.id &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.priority === nextProps.task.priority &&
+    prevProps.index === nextProps.index;
+});
 
-export default TaskCard
+export default TaskCard;

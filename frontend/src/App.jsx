@@ -11,6 +11,7 @@ import ProjectBoard from "@pages/ProjectBoard"
 import OrganizationPage from "@pages/OrganizationPage"
 import OrganizationSettings from "@pages/OrganizationSettings" // Import the new component
 import ProfileSettings from "@pages/ProfileSettings"
+import Profile from "@pages/Profile"
 
 // Components
 import ProtectedRoute from "@components/ProtectedRoute"
@@ -70,10 +71,26 @@ function App() {
                     }
                   />
                   <Route
-                    path="/profile"
+                    path="/profile/settings"
                     element={
                       <ProtectedRoute>
                         <ProfileSettings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile/:userId"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
                       </ProtectedRoute>
                     }
                   />

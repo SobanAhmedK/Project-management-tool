@@ -14,6 +14,10 @@ const mockOrganizations = [
     members: [
       { id: "user1", name: "John Doe", role: "Admin" },
       { id: "user2", name: "Jane Smith", role: "Member" },
+      { id: "user2", name: "Jane Smith", role: "Member" },
+      { id: "user2", name: "Jane Smith", role: "Member" },
+      { id: "user2", name: "Jane Smith", role: "Member" },
+      { id: "user2", name: "Jane Smith", role: "Member" },
     ],
   },
   {
