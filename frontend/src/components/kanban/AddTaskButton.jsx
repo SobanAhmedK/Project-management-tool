@@ -97,7 +97,6 @@ const AddTaskButton = ({ projectId }) => {
         transition={{ type: "spring", stiffness: 300 }}
       > <div className="font-bold">Add Task </div>
         <PlusIcon className="w-6 h-6" />
-
       </motion.button>
 
       <AnimatePresence>
@@ -255,7 +254,7 @@ const AddTaskButton = ({ projectId }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
                       <div className="relative">
                         <select
-                          className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
+                          className="w-full pt-3.5 p-3 pl-9 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
                           value={newTask.assigned_to?.id || ""}
                           onChange={(e) => {
                             const selectedMember = members.find(m => m.id === e.target.value)
@@ -269,14 +268,14 @@ const AddTaskButton = ({ projectId }) => {
                           }}
                           disabled={isSubmitting}
                         >
-                          <option value="">&nbsp;&nbsp;&nbsp;Unassigned</option>
+                          <option value="" > Unassigned</option>
                           {members.map(member => (
                             <option key={member.id} value={member.id}>
-                             &nbsp;&nbsp;&nbsp; {member.full_name}
+                               {member.full_name}
                             </option>
                           ))}
                         </select>
-                        <UserCircleIcon className="absolute  left-1.5 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
+                        <UserCircleIcon className="absolute  left-2 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
 
@@ -349,11 +348,13 @@ const AddTaskButton = ({ projectId }) => {
                     <motion.button
                       type="button"
                       className="px-6 py-3 bg-blue-500 text-white font-medium rounded-xl flex items-center justify-center shadow-md hover:bg-blue-600"
-                      onClick={() => {
-                        const sections = ["basic", "details", "assign"]
-                        const currentIndex = sections.indexOf(expandedSection)
-                        const nextSection = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : null
-                        if (nextSection) setExpandedSection(nextSection)
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const sections = ["basic", "details", "assign"];
+                        const currentIndex = sections.indexOf(expandedSection);
+                        const nextSection = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : null;
+                        if (nextSection) setExpandedSection(nextSection);
                       }}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
