@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
@@ -294,10 +292,9 @@ const Dashboard = () => {
                 {recentActivity.length > 0 ? (
                   <ul className="divide-y divide-gray-100">
                     {recentActivity.map((activity) => (
-                      <motion.li 
+                      <li 
                         key={activity.id}
-                        whileHover={{ backgroundColor: "#f9fafb" }}
-                        className="p-4 flex items-start"
+                        className="p-4 flex items-start hover:bg-gray-50 transition-colors duration-200"
                       >
                         <div className="mr-3 mt-0.5">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-100 to-indigo-100 flex items-center justify-center text-cyan-600">
@@ -310,7 +307,7 @@ const Dashboard = () => {
                             {formatTime(activity.timestamp)} • {activity.user}
                           </p>
                         </div>
-                      </motion.li>
+                      </li>
                     ))}
                   </ul>
                 ) : (
@@ -330,9 +327,8 @@ const Dashboard = () => {
 }
 
 const SummaryCard = ({ title, count, icon, color, description }) => (
-  <motion.div 
-    whileHover={{ y: -5 }}
-    className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+  <div 
+    className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:translate-y-[-5px] transition-all duration-300 ease-in-out`}
   >
     <div className="flex items-center justify-between">
       <h3 className="text-gray-500 font-medium">{title}</h3>
@@ -342,7 +338,7 @@ const SummaryCard = ({ title, count, icon, color, description }) => (
     </div>
     <p className="text-3xl font-bold mt-2 text-gray-800">{count}</p>
     <p className="text-sm text-gray-500 mt-1">{description}</p>
-  </motion.div>
+  </div>
 )
 
 const Tabs = ({ activeTab, setActiveTab, tabs }) => (
@@ -369,10 +365,9 @@ const Tabs = ({ activeTab, setActiveTab, tabs }) => (
 const TaskList = ({ tasks, getPriorityIcon, getStatusBadge, showCreator = false, showAssignee = false }) => (
   <ul className="divide-y divide-gray-100">
     {tasks.map((task) => (
-      <motion.li 
+      <li 
         key={task.id} 
-        whileHover={{ backgroundColor: "#f9fafb" }} 
-        className="p-4"
+        className="p-4 hover:bg-gray-50 transition-colors duration-200"
       >
         <Link to={`/project/${task.projectId}/`} className="flex items-start">
           <div className="mr-3 mt-0.5">{getPriorityIcon(task.priority)}</div>
@@ -402,7 +397,7 @@ const TaskList = ({ tasks, getPriorityIcon, getStatusBadge, showCreator = false,
             )}
           </div>
         </Link>
-      </motion.li>
+      </li>
     ))}
   </ul>
 )
@@ -410,10 +405,9 @@ const TaskList = ({ tasks, getPriorityIcon, getStatusBadge, showCreator = false,
 const ProjectList = ({ projects }) => (
   <ul className="divide-y divide-gray-100">
     {projects.map((project) => (
-      <motion.li 
+      <li 
         key={project.id} 
-        whileHover={{ backgroundColor: "#f9fafb" }} 
-        className="p-4"
+        className="p-4 hover:bg-gray-50 transition-colors duration-200"
       >
         <Link to={`/project/${project.id}`} className="flex items-start">
           <div className="mr-3 mt-0.5">
@@ -443,7 +437,7 @@ const ProjectList = ({ projects }) => (
             )}
           </div>
         </Link>
-      </motion.li>
+      </li>
     ))}
   </ul>
 )
@@ -451,10 +445,9 @@ const ProjectList = ({ projects }) => (
 const OrganizationList = ({ organizations }) => (
   <ul className="divide-y divide-gray-100">
     {organizations.map((org) => (
-      <motion.li 
+      <li 
         key={org.id} 
-        whileHover={{ backgroundColor: "#f9fafb" }} 
-        className="p-4"
+        className="p-4 hover:bg-gray-50 transition-colors duration-200"
       >
         <Link to={`/organization/${org.id}`} className="flex items-start">
           <div className="mr-3 mt-0.5">
@@ -476,7 +469,7 @@ const OrganizationList = ({ organizations }) => (
             </p>
           </div>
         </Link>
-      </motion.li>
+      </li>
     ))}
   </ul>
 )

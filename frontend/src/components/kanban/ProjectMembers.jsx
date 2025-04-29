@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { Link } from "react-router-dom"
 import { 
   UserCircleIcon, 
   PaperAirplaneIcon,
@@ -35,14 +36,34 @@ const ProjectMembers = () => {
     memberName: ""
   })
 
-  // Check if current user is admin/manager
   const isAdminOrManager = project?.members?.find(m => m.id === currentUser?.id)?.role === "admin" || 
                           project?.members?.find(m => m.id === currentUser?.id)?.role === "manager"
 
-  // Close dropdown when clicking outside
+  // Role colors mapping
+  const getRoleBadgeStyles = (role) => {
+    switch (role) {
+      case "admin":
+        return "bg-orange-100 text-orange-700 border-orange-200";
+      case "manager":
+        return "bg-green-100 text-green-700 border-green-200";
+      default:
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
+    }
+  }
+
+  const getRoleIconStyles = (role) => {
+    switch (role) {
+      case "admin":
+        return "bg-orange-100 text-orange-600";
+      case "manager":
+        return "bg-green-100 text-green-600";
+      default:
+        return "bg-indigo-100 text-indigo-600";
+    }
+  }
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Only close dropdown if we're not clicking on a modal-related element
       if (
         event.target.closest('[data-modal-container]') || 
         event.target.closest('[data-modal-trigger]')
@@ -107,7 +128,6 @@ const ProjectMembers = () => {
   }
 
   const openConfirmationModal = (action, memberId, memberName) => {
-    // Use setTimeout to separate the events and ensure the modal opens
     setTimeout(() => {
       setModalConfig({
         action,
@@ -115,7 +135,7 @@ const ProjectMembers = () => {
         memberName
       })
       setShowConfirmModal(true)
-      setSelectedMemberId(null) // Close the dropdown
+      setSelectedMemberId(null) 
     }, 50)
   }
 
@@ -129,7 +149,7 @@ const ProjectMembers = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
-      {/* Header */}
+    
       <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center bg-gradient-to-r from-cyan-50 to-indigo-50">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Team Members</h2>
@@ -149,7 +169,6 @@ const ProjectMembers = () => {
         )}
       </div>
 
-      {/* Add Member Form */}
       <AnimatePresence>
         {showAddMember && (
           <motion.div
@@ -192,79 +211,82 @@ const ProjectMembers = () => {
         )}
       </AnimatePresence>
 
-      {/* Members List */}
-      <div className="divide-y divide-gray-200 overflow-visible">
-        {project?.members?.map((member) => (
-          <div 
-            key={member.id} 
-            className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors relative group"
-            ref={el => dropdownRefs.current[member.id] = el}
-          >
-            <div className="flex items-center min-w-0 gap-4">
-              <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-100 to-indigo-100 flex items-center justify-center">
-                  <UserCircleIcon className="w-7 h-7 text-cyan-600" />
-                </div>
-                {(member.role === "manager" || member.role === "admin") && (
-                  <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
-                    <div className={`flex items-center justify-center w-5 h-5 rounded-full ${
-                      member.role === "admin" 
-                        ? "bg-purple-100 text-purple-600" 
-                        : "bg-blue-100 text-blue-600"
-                    }`}>
-                      <ShieldCheckIcon className="w-3 h-3" />
-                    </div>
-                  </div>
-                )}
+    
+        <div className="divide-y divide-gray-200 overflow-visible">
+          {project?.members?.map((member) => (
+            <div 
+          key={member.id} 
+          className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors relative group"
+          ref={el => dropdownRefs.current[member.id] = el}
+            >
+          <div className="flex items-center min-w-0 gap-4">
+            <div className="relative shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-100 to-indigo-100 flex items-center justify-center">
+            <UserCircleIcon className="w-7 h-7 text-cyan-600" />
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-900 truncate">
-                    {member.full_name}
-                  </h3>
-                  {member.id === currentUser?.id && (
-                    <span className="text-xs px-1.5 py-0.5 bg-cyan-100 text-cyan-800 rounded-full">
-                      You
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 truncate mt-1">
-                  {member.email || "No email provided"}
-                </p>
+              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
+            <div className={`flex  items-center justify-center w-5 h-5 rounded-full ${getRoleIconStyles(member.role)}`}>
+              <ShieldCheckIcon className="w-3 h-3" />
+            </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {/* Communication buttons - only show if not current user */}
-              {member.id !== currentUser?.id && (
-                <>
-                  <button 
-                    className="p-2 text-gray-400 hover:text-cyan-600 transition-colors z-10 hover:bg-cyan-50 rounded-full"
-                    title="Start video call"
-                  >
-                    <VideoCameraIcon className="w-5 h-5" />
-                  </button>
-                  <button 
-                    className="p-2 text-gray-400 hover:text-indigo-600 transition-colors z-10 hover:bg-indigo-50 rounded-full"
-                    title="Send message"
-                  >
-                    <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
-                  </button>
-                </>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-gray-900 truncate">
+              {member.id === currentUser?.id ? (
+                <Link to={`/profile/`} className="font-medium text-gray-800 hover:text-indigo-600 truncate">
+              {member.full_name}
+                </Link>
+              ) : (
+                <Link to={`/profile/${member.id}`} className="font-medium text-gray-800 hover:text-indigo-600 truncate">
+              {member.full_name}
+                </Link>
               )}
-              
-              {/* Menu button - only show if admin/manager or for current user */}
-              {(isAdminOrManager || member.id === currentUser?.id) && (
-                <button 
-                  onClick={(e) => toggleMemberMenu(member.id, e)}
-                  className="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-200 transition-colors z-10"
-                  aria-label="Member options"
-                >
-                  <EllipsisVerticalIcon className="w-5 h-5" />
-                </button>
-              )}
+            </h3>  
+            {member.id === currentUser?.id && (
+              <span className="text-xs px-1.5 py-0.5 bg-cyan-100 text-cyan-800 rounded-full">
+                You
+              </span>
+            )}
+              </div>
+              <p className="text-xs text-gray-500 truncate mt-1">
+            {member.email || "No email provided"}
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs px-2 py-0.5 rounded-full border ${getRoleBadgeStyles(member.role)}`}>
+              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+            </span>
+            {member.id !== currentUser?.id && (
+              <>
+            <button 
+              className="p-2 text-gray-400 hover:text-cyan-600 transition-colors z-10 hover:bg-cyan-50 rounded-full"
+              title="Start video call"
+            >
+              <VideoCameraIcon className="w-5 h-5" />
+            </button>
+            <button 
+              className="p-2 text-gray-400 hover:text-indigo-600 transition-colors z-10 hover:bg-indigo-50 rounded-full"
+              title="Send message"
+            >
+              <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
+            </button>
+              </>
+            )}
+            
+            {(isAdminOrManager || member.id === currentUser?.id) && (
+              <button 
+            onClick={(e) => toggleMemberMenu(member.id, e)}
+            className="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-200 transition-colors z-10"
+            aria-label="Member options"
+              >
+            <EllipsisVerticalIcon className="w-5 h-5" />
+              </button>
+            )}
+          </div>
 
-            {/* Member Actions Dropdown */}
+          {/* Member Actions Dropdown */}
             <AnimatePresence>
               {selectedMemberId === member.id && (
                 <motion.div

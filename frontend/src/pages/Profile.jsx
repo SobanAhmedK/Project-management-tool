@@ -34,7 +34,7 @@ const UserProfile = () => {
     const fetchUser = async () => {
       try {
         setLoading(true)
-        if (userId === "1") {
+        if (userId === "1" || userId=== "user1" || userId === "user2" || userId === "user3") {
           // Use mock user data if userId is "1"
           setProfileUser(mockUser)
         } else if (userId) {

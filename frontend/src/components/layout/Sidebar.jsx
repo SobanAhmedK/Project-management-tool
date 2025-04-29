@@ -10,6 +10,7 @@ import {
   UserIcon,
   UsersIcon,
   SunIcon,
+  ChatBubbleLeftEllipsisIcon as ChatIcon,
 } from "@heroicons/react/24/outline"
 import { useProject } from "@context/ProjectContext"
 import { useOrganization } from "@context/OrganizationContext"
@@ -62,6 +63,7 @@ const Sidebar = () => {
 
   const isActive = (path) => location.pathname === path
   const isSettingsActive = location.pathname.includes('/settings')
+  const isConversationsActive = location.pathname === '/conversations'
 
   return (
     <motion.div
@@ -108,6 +110,21 @@ const Sidebar = () => {
             >
               <HomeIcon className="w-5 h-5 mr-3" />
               {!isCollapsed && <span>Dashboard</span>}
+            </Link>
+          </motion.li>
+
+          {/* Conversations */}
+          <motion.li whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to="/conversations"
+              className={`flex items-center px-3 py-2.5 rounded-lg ${
+                isConversationsActive
+                  ? "bg-gradient-to-r from-cyan-50 to-indigo-50 text-cyan-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <ChatIcon className="w-5 h-5 mr-3" />
+              {!isCollapsed && <span>Conversations</span>}
             </Link>
           </motion.li>
 
@@ -273,11 +290,8 @@ const Sidebar = () => {
               <UserIcon className="w-4 h-4 mr-2" />
               User Profile
             </Link>
-
-          
-
             <Link
-              to=""
+              to="/app-preferences"
               className="flex items-center px-4 py-2 hover:bg-gray-50 text-sm"
               onClick={() => setShowSettingsDropdown(false)}
             >

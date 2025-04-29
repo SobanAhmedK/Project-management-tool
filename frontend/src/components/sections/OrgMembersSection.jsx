@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";    
 import {
   UserGroupIcon,
   EllipsisVerticalIcon,
@@ -12,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 const MemberItem = ({ member, onMenuAction }) => {
+  const currentUser = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState('bottom');
   const menuRef = useRef(null);
@@ -19,7 +21,7 @@ const MemberItem = ({ member, onMenuAction }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (menuRef.current && !menuRef.current.contains(event.target) ){
         setIsMenuOpen(false);
       }
     };
@@ -40,11 +42,17 @@ const MemberItem = ({ member, onMenuAction }) => {
   return (
     <li className="py-3 flex justify-between items-center group relative">
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <Link to={`/profile/${member.id}`} className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0 hover:bg-indigo-200 transition-colors">
+        <Link 
+          to={member.id === currentUser?.id ? '/profile' : `/profile/${member.id}`} 
+          className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-medium flex-shrink-0 hover:bg-indigo-200 transition-colors"
+        >
           {member.name.charAt(0).toUpperCase()}
         </Link>
         <div className="min-w-0">
-          <Link to={`/profile/${member.id}`} className="font-medium text-gray-800 hover:text-indigo-600 truncate">
+          <Link 
+            to={member.id === currentUser?.id ? '/profile' : `/profile/${member.id}`} 
+            className="font-medium text-gray-800 hover:text-indigo-600 truncate"
+          >
             {member.name}
           </Link>
           <p className="text-sm text-gray-500 truncate">
@@ -54,12 +62,18 @@ const MemberItem = ({ member, onMenuAction }) => {
       </div>
 
       <div className="flex items-center gap-2">
-        {member.role === "Admin" && (
-          <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-            Admin
+       {member.role === 'Admin' ?(<span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+            {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+          </span>): member.role === 'Manager' ? (
+    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+      {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+    </span>
+  )
+          :<span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
+            {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
           </span>
-        )}
-
+        
+       }
         <div className="flex items-center gap-1">
           <button
             className="text-gray-400 hover:text-indigo-500 p-1"

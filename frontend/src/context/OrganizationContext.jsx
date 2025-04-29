@@ -13,11 +13,11 @@ const mockOrganizations = [
     description: "The design team responsible for UI/UX",
     members: [
       { id: "user1", name: "John Doe", role: "Admin" },
-      { id: "user2", name: "Jane Smith", role: "Member" },
-      { id: "user2", name: "Jane Smith", role: "Member" },
-      { id: "user2", name: "Jane Smith", role: "Member" },
-      { id: "user2", name: "Jane Smith", role: "Member" },
-      { id: "user2", name: "Jane Smith", role: "Member" },
+      { id: "user2", name: "Jane", role: "Member" },
+      { id: "user2", name: "Ailen", role: "Manager" },
+      { id: "user2", name: "NOOB", role: "Member" },
+      { id: "user2", name: "BOB", role: "Member" },
+      { id: "user2", name: "Popye", role: "Member" },
     ],
   },
   {
