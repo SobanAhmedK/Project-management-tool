@@ -123,7 +123,7 @@ const MemberItem = ({ member, onMenuAction }) => {
                       onMenuAction("delete", member);
                       setIsMenuOpen(false);
                     }}
-                  >
+                  > 
                     <XMarkIcon className="w-4 h-4" />
                     Remove
                   </button>

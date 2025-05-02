@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { 
   XMarkIcon,
   UserCircleIcon,
@@ -19,38 +19,7 @@ import {
   ChatBubbleOvalLeftEllipsisIcon
 } from "@heroicons/react/24/outline"
 import { SparklesIcon, FireIcon, BoltIcon } from "@heroicons/react/24/solid"
-
-// Mock API functions
-const mockApi = {
-  updateTask: async (task) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ ...task })
-      }, 500)
-    })
-  },
-  getProject: (projectId) => ({
-    id: projectId,
-    name: "Acme Project",
-    members: [
-      { id: "1", full_name: "Alex Johnson", avatar: "AJ" },
-      { id: "2", full_name: "Sam Wilson", avatar: "SW" },
-      { id: "3", full_name: "Taylor Smith", avatar: "TS" }
-    ]
-  })
-}
-
-// Mock context
-const useProject = () => ({
-  updateTask: mockApi.updateTask,
-  getProject: mockApi.getProject,
-  currentUser: {
-    id: "1",
-    full_name: "Alex Johnson",
-    role: "admin",
-    avatar: "AJ"
-  }
-})
+import { useProject } from "@context/ProjectContext" // Adjust import path as needed
 
 const Avatar = ({ name, size = "md" }) => {
   const sizes = {
@@ -66,7 +35,7 @@ const Avatar = ({ name, size = "md" }) => {
   )
 }
 
-const TaskDetail = ({ task, onClose, onStatusChange }) => {
+const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
   const { updateTask, getProject, currentUser } = useProject()
   const [editMode, setEditMode] = useState(false)
   const [editedTask, setEditedTask] = useState({ ...task })
@@ -129,16 +98,26 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
     try {
       const taskToUpdate = {
         ...editedTask,
-        status: statusMap[editedTask.status] || editedTask.status
+        status: statusMap[editedTask.status] || editedTask.status,
+        updated_at: new Date().toISOString()
       }
-      await updateTask(taskToUpdate)
+      
+      const updatedTask = await updateTask(taskToUpdate)
+      
+      // Notify parent component of the update
+      if (onTaskUpdate) {
+        onTaskUpdate(updatedTask)
+      }
+      
       setIsSuccess(true)
       setTimeout(() => {
         setEditMode(false)
         setIsSubmitting(false)
         setIsSuccess(false)
-        if (task.status !== editedTask.status) {
-          onStatusChange(editedTask.status)
+        
+        // Notify parent if status changed
+        if (task.status !== editedTask.status && onStatusChange) {
+          onStatusChange(updatedTask.status)
         }
       }, 800)
     } catch (error) {
@@ -151,7 +130,7 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
     if (!comment.trim()) return
 
     const newComment = {
-      id: Date.now().toString(),
+      id: `comment-${Date.now()}`,
       comment_text: comment,
       commented_by: { 
         id: currentUser.id, 
@@ -164,13 +143,19 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
     const updatedTask = {
       ...editedTask,
       comments: [...(editedTask.comments || []), newComment],
+      updated_at: new Date().toISOString()
     }
 
     try {
       setIsSubmitting(true)
-      await updateTask(updatedTask)
-      setEditedTask(updatedTask)
+      const savedTask = await updateTask(updatedTask)
+      setEditedTask(savedTask)
       setComment("")
+      
+      // Notify parent component of the update
+      if (onTaskUpdate) {
+        onTaskUpdate(savedTask)
+      }
     } catch (error) {
       console.error("Error adding comment:", error)
     } finally {
@@ -186,10 +171,17 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
       )
       const updatedTask = {
         ...editedTask,
-        comments: updatedComments
+        comments: updatedComments,
+        updated_at: new Date().toISOString()
       }
-      await updateTask(updatedTask)
-      setEditedTask(updatedTask)
+      
+      const savedTask = await updateTask(updatedTask)
+      setEditedTask(savedTask)
+      
+      // Notify parent component of the update
+      if (onTaskUpdate) {
+        onTaskUpdate(savedTask)
+      }
     } catch (error) {
       console.error("Error deleting comment:", error)
     } finally {
@@ -311,8 +303,8 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
                       <option value="done">Done</option>
                     </select>
                   ) : (
-                    <div className={`text-sm px-3 py-2 rounded-lg font-medium ring-1 flex items-center space-x-2 ${statusData[reverseStatusMap[task.status]].color}`}>
-                      {statusData[reverseStatusMap[task.status]].icon}
+                    <div className={`text-sm px-3 py-2 rounded-lg font-medium ring-1 flex items-center space-x-2 ${statusData[reverseStatusMap[task.status]]?.color || 'bg-gray-100 text-gray-700 ring-gray-200'}`}>
+                      {statusData[reverseStatusMap[task.status]]?.icon || <ClockIcon className="w-4 h-4" />}
                       <span>
                         {reverseStatusMap[task.status] === "todo" && "To Do"}
                         {reverseStatusMap[task.status] === "in-progress" && "In Progress"}
@@ -336,9 +328,9 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
                       <option value="high">High</option>
                     </select>
                   ) : (
-                    <div className={`text-sm px-3 py-2 rounded-lg font-medium ring-1 flex items-center space-x-2 ${priorityData[task.priority].color}`}>
-                      {priorityData[task.priority].icon}
-                      <span>{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+                    <div className={`text-sm px-3 py-2 rounded-lg font-medium ring-1 flex items-center space-x-2 ${priorityData[task.priority]?.color || 'bg-gray-100 text-gray-700 ring-gray-200'}`}>
+                      {priorityData[task.priority]?.icon || <FlagIcon className="w-4 h-4" />}
+                      <span>{task.priority?.charAt(0).toUpperCase() + task.priority?.slice(1) || 'Medium'}</span>
                     </div>
                   )}
                 </div>
@@ -373,7 +365,7 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
                     <div className="flex items-center text-sm px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700">
                       {task.assigned_to ? (
                         <>
-                          <Avatar name={task.assigned_to.avatar} size="sm" />
+                          <Avatar name={task.assigned_to.avatar || task.assigned_to.full_name?.charAt(0)} size="sm" />
                           <span className="ml-2 text-gray-700 dark:text-gray-200">{task.assigned_to.full_name}</span>
                         </>
                       ) : (
@@ -459,7 +451,7 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-start space-x-3">
-                        <Avatar name={comment.commented_by.avatar} size="sm" />
+                        <Avatar name={comment.commented_by.avatar || comment.commented_by.full_name?.charAt(0)} size="sm" />
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
                             <div className="flex items-center space-x-2">
@@ -509,7 +501,7 @@ const TaskDetail = ({ task, onClose, onStatusChange }) => {
               {/* Comment Form */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <Avatar name={currentUser.avatar} size="sm" />
+                  <Avatar name={currentUser.avatar || currentUser.full_name?.charAt(0)} size="sm" />
                   <div className="flex-1">
                     <textarea
                       className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 resize-none"

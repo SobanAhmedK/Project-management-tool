@@ -8,13 +8,14 @@ import {
 } from "@heroicons/react/24/outline";
 import EmptyState from "@components/ui/EmptyState";
 import AddProjectModal from "@components/modals/AddProjectModal";
+import { Link } from "react-router-dom";
 
 const ProjectItem = ({ project }) => (
   <motion.li
     whileHover={{ x: 4 }}
     className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors"
   >
-    <a href={`/project/${project.id}`} className="block">
+    <Link to={`/project/${project.id}`} className="block">
       <div className="flex justify-between items-start">
         <div>
           <h3 className="font-medium text-gray-800">{project.name}</h3>
@@ -45,7 +46,7 @@ const ProjectItem = ({ project }) => (
           )}
         </div>
       </div>
-    </a>
+    </Link>
   </motion.li>
 );
 

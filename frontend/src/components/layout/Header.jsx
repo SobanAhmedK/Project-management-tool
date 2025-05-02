@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Button from "../ui/Button.jsx";
+import LOGO from "../../assets/LOGO.png";
 
 const Header = ({ onFeaturesClick, onDemoClick, onTestimonialsClick, onPricingClick }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -36,9 +37,9 @@ const Header = ({ onFeaturesClick, onDemoClick, onTestimonialsClick, onPricingCl
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Link to="/" className="flex items-center">
+          <Link to="/header" className="flex items-center">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-              TaskSync<span className="text-indigo-600">.</span>
+            <img src={LOGO} alt="TaskSync" className="w-40 " />
             </h1>
           </Link>
         </motion.div>

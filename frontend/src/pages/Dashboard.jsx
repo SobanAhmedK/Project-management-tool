@@ -35,9 +35,9 @@ const Dashboard = () => {
   const { currentUser } = useAuth()
   const [projects, setProjects] = useState([])
   const [organizations, setOrganizations] = useState([])
-  const [activeTab, setActiveTab] = useState("assigned") // Changed to "assigned" | "created"
+  const [activeTab, setActiveTab] = useState("assigned") 
   const location = useLocation()
-
+  const projectsData = getProjects();
   useEffect(() => {
     const loadData = async () => {
       const loadedProjects = getProjects() || []
@@ -46,7 +46,7 @@ const Dashboard = () => {
       setOrganizations(loadedOrgs)
     }
     loadData()
-  }, [getProjects, getOrganizations, location])
+  }, [getProjects, getOrganizations, location,projectsData])
 
   // Memoized computations for better performance
   const { assignedTasks, createdTasks, recentActivity } = useMemo(() => {

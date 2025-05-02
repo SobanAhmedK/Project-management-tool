@@ -1,21 +1,47 @@
 import { useState, useEffect } from "react";
 import { useProject } from "@context/ProjectContext";
+import { useAuth } from "@context/AuthContext";
+import { useOrganization } from "@context/OrganizationContext";
 import { XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";              
 
 const AddProjectModal = ({ orgId, isOpen, onClose }) => {
   const { addProject } = useProject();
+  const { getOrganization } = useOrganization();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const { currentUser } = useAuth();
+  const [userOrgRole, setUserOrgRole] = useState(null);
 
   useEffect(() => {
     setIsMounted(true);
     return () => setIsMounted(false);
   }, []);
+
+  // Get user's role in the organization
+  useEffect(() => {
+    if (orgId && currentUser) {
+      try {
+        const organization = getOrganization(orgId);
+        if (organization) {
+          const member = organization.members.find(m => m.id === currentUser.id);
+          if (member) {
+            setUserOrgRole(member.role);
+          } else {
+            // User is not a member of this organization
+            setUserOrgRole("Member"); // Default role if not found
+          }
+        }
+      } catch (error) {
+        console.error("Error getting user's role in organization:", error);
+        setUserOrgRole("Member"); // Default fallback role
+      }
+    }
+  }, [orgId, currentUser, getOrganization]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,7 +56,16 @@ const AddProjectModal = ({ orgId, isOpen, onClose }) => {
       await addProject({
         ...formData,
         organization: { id: orgId },
-        members: [],
+        created_by: {
+          id: currentUser.id,
+          full_name: currentUser.name,
+          email: currentUser.email || "unknown@example.com"
+        },
+        members: [{ 
+          id: currentUser.id, 
+          full_name: currentUser.name, 
+          role: userOrgRole || "Member" // Use the fetched role or default to "Member"
+        }],
         tasks: [],
       });
       onClose();

@@ -1,5 +1,3 @@
-
-
 import { createContext, useContext, useState } from "react"
 
 // Create context
@@ -12,12 +10,12 @@ const mockOrganizations = [
     name: "Design Team",
     description: "The design team responsible for UI/UX",
     members: [
-      { id: "user1", name: "John Doe", role: "Admin" },
-      { id: "user2", name: "Jane", role: "Member" },
-      { id: "user2", name: "Ailen", role: "Manager" },
-      { id: "user2", name: "NOOB", role: "Member" },
-      { id: "user2", name: "BOB", role: "Member" },
-      { id: "user2", name: "Popye", role: "Member" },
+      { id: "user3", name: "John Doe", role: "Admin" },
+      { id: "user4", name: "Jane", role: "Member" },
+      { id: "user5", name: "Ailen", role: "Manager" },
+      { id: "user6", name: "NOOB", role: "Member" },
+      { id: "user7", name: "BOB", role: "Member" },
+      { id: "user8", name: "Popye", role: "Member" },
     ],
   },
   {
@@ -40,57 +38,70 @@ export const OrganizationProvider = ({ children }) => {
   }
 
   const addOrganization = (newOrg) => {
-    setOrganizations([...organizations, { ...newOrg, id: Date.now().toString() }])
+    const updatedOrganizations = [...organizations, { ...newOrg, id: Date.now().toString() }]
+    setOrganizations(updatedOrganizations)
+    return updatedOrganizations.find(org => org.id === newOrg.id)
   }
 
   const updateOrganization = (updatedOrg) => {
-    setOrganizations(organizations.map((org) => (org.id === updatedOrg.id ? updatedOrg : org)))
+    const updatedOrganizations = organizations.map((org) => 
+      (org.id === updatedOrg.id ? updatedOrg : org)
+    )
+    setOrganizations(updatedOrganizations)
+    return updatedOrg
   }
 
   const deleteOrganization = (orgId) => {
-    setOrganizations(organizations.filter((org) => org.id !== orgId))
+    const updatedOrganizations = organizations.filter((org) => org.id !== orgId)
+    setOrganizations(updatedOrganizations)
+    return true
   }
 
   const addMember = (orgId, newMember) => {
-    setOrganizations(
-      organizations.map((org) => {
-        if (org.id === orgId) {
-          return {
-            ...org,
-            members: [...org.members, newMember],
-          }
+    const updatedOrganizations = organizations.map((org) => {
+      if (org.id === orgId) {
+        return {
+          ...org,
+          members: [...org.members, newMember],
         }
-        return org
-      }),
-    )
+      }
+      return org
+    })
+    
+    setOrganizations(updatedOrganizations)
+    return updatedOrganizations.find(org => org.id === orgId)
   }
 
-  const updateMember = (orgId, updatedMember) => {
-    setOrganizations(
-      organizations.map((org) => {
-        if (org.id === orgId) {
-          return {
-            ...org,
-            members: org.members.map((member) => (member.id === updatedMember.id ? updatedMember : member)),
-          }
+  const updateMemberRole = (orgId, memberId, newRole) => {
+    const updatedOrganizations = organizations.map((org) => {
+      if (org.id === orgId) {
+        return {
+          ...org,
+          members: org.members.map((member) => 
+            member.id === memberId ? { ...member, role: newRole } : member
+          ),
         }
-        return org
-      }),
-    )
+      }
+      return org
+    })
+    
+    setOrganizations(updatedOrganizations)
+    return updatedOrganizations.find(org => org.id === orgId)
   }
 
   const removeMember = (orgId, memberId) => {
-    setOrganizations(
-      organizations.map((org) => {
-        if (org.id === orgId) {
-          return {
-            ...org,
-            members: org.members.filter((member) => member.id !== memberId),
-          }
+    const updatedOrganizations = organizations.map((org) => {
+      if (org.id === orgId) {
+        return {
+          ...org,
+          members: org.members.filter((member) => member.id !== memberId),
         }
-        return org
-      }),
-    )
+      }
+      return org
+    })
+    
+    setOrganizations(updatedOrganizations)
+    return updatedOrganizations.find(org => org.id === orgId)
   }
 
   const value = {
@@ -100,7 +111,7 @@ export const OrganizationProvider = ({ children }) => {
     updateOrganization,
     deleteOrganization,
     addMember,
-    updateMember,
+    updateMemberRole,
     removeMember,
   }
 
