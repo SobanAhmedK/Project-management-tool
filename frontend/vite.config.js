@@ -18,6 +18,7 @@ export default defineConfig({
       "@layouts": path.resolve(__dirname, "./src/components/layout"),
       "@kanban": path.resolve(__dirname, "./src/components/kanban"),
       "@auth": path.resolve(__dirname, "./src/pages/auth"),
+      "@assets": path.resolve(__dirname, "./src/assets"),
     },
   },
   server: {

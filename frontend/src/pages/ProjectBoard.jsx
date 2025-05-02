@@ -14,7 +14,7 @@ import { useAuth } from "../context/AuthContext";
 
 const ProjectBoard = () => {
   const { projectId } = useParams();
-  const { getProject, updateTaskStatus } = useProject();
+  const { getProject, updateTaskStatus, updateTaskPositions } = useProject();
   const { currentOrganization } = useOrganization();
   const { currentUser } = useAuth();
   const project = getProject(projectId);
@@ -22,11 +22,9 @@ const ProjectBoard = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [activeTab, setActiveTab] = useState("board");
 
-  // Check if current user is admin/manager
-  const isAdminOrManager = project?.members?.find(m => m.id === currentUser?.id)?.role === "admin" || 
-                          project?.members?.find(m => m.id === currentUser?.id)?.role === "manager";
+  const isAdminOrManager = project?.members?.find(m => m.id === currentUser?.id)?.role === "Admin" || 
+                          project?.members?.find(m => m.id === currentUser?.id)?.role === "Manager";
 
-  // Optimize column initialization
   const initialColumns = useMemo(() => {
     if (!project?.tasks) return null;
 
@@ -74,7 +72,6 @@ const ProjectBoard = () => {
 
     const { source, destination, draggableId } = result;
 
-    // Dropped in the same position
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
@@ -145,23 +142,7 @@ const ProjectBoard = () => {
         ]);
       }, 10);
     }
-  }, [columns, project, updateTaskStatus]);
-
-  const updateTaskPositions = useCallback((taskIds, columnId) => {
-    // Database update implementation would go here
-    setProjects(prevProjects => 
-      prevProjects.map(project => {
-        const updatedTasks = project.tasks.map(task => {
-          const newIndex = taskIds.indexOf(task.id);
-          if (newIndex !== -1) {
-            return { ...task, order: newIndex };
-          }
-          return task;
-        });
-        return { ...project, tasks: updatedTasks };
-      })
-    );
-  }, []);
+  }, [columns, project, updateTaskStatus, updateTaskPositions]);
 
   const handleTaskClick = useCallback((taskId) => {
     const task = project?.tasks.find(t => t.id === taskId);

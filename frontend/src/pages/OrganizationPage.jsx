@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
@@ -20,8 +19,12 @@ const OrganizationPage = () => {
   const { orgId } = useParams()
   const { getOrganization, updateMemberRole, removeMember } = useOrganization()
   const { getProjects } = useProject()
-  const [organization, setOrganization] = useState(null)
-  const [projects, setProjects] = useState([])
+  const organization = getOrganization(orgId)
+  const allProjects = getProjects()
+  const projects = allProjects.filter(
+    project => project.organization?.id === orgId
+  )
+
   const [loading, setLoading] = useState(true)
   const [modalState, setModalState] = useState({
     inviteMember: false,
@@ -34,28 +37,14 @@ const OrganizationPage = () => {
   })
   const [memberToDelete, setMemberToDelete] = useState(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const orgData = getOrganization(orgId)
-        const allProjects = getProjects()
-        
-        const orgProjects = allProjects.filter(
-          project => project.organization.id === orgId
-        )
-        
-        setOrganization(orgData)
-        setProjects(orgProjects)
-      } catch (error) {
-        console.error("Failed to fetch data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
 
-    fetchData()
-  }, [orgId, getOrganization, getProjects])
+  useEffect(() => {
+    if (organization) {
+      setLoading(false)
+    } else {
+      setLoading(true)
+    }
+  }, [organization, projects.length])
 
   const handleInvite = (e) => {
     e.preventDefault()
@@ -66,9 +55,9 @@ const OrganizationPage = () => {
 
   const handleRoleChange = async (memberId, newRole) => {
     try {
-      await updateMemberRole(orgId, memberId, newRole)
-      // Refresh organization data
-      setOrganization(getOrganization(orgId))
+      // Get updated organization directly from the context function
+      const updatedOrg = await updateMemberRole(orgId, memberId, newRole)
+      setOrganization(updatedOrg)
     } catch (error) {
       console.error("Failed to update role:", error)
     }
@@ -76,9 +65,9 @@ const OrganizationPage = () => {
 
   const handleMemberDelete = async (memberId) => {
     try {
-      await removeMember(orgId, memberId)
-      // Refresh organization data
-      setOrganization(getOrganization(orgId))
+      // Get updated organization directly from the context function
+      const updatedOrg = await removeMember(orgId, memberId)
+      setOrganization(updatedOrg)
     } catch (error) {
       console.error("Failed to delete member:", error)
     } finally {
@@ -140,7 +129,7 @@ const OrganizationPage = () => {
                   onMenuAction={(action, member) => {
                     if (action === 'delete') {
                       setMemberToDelete(member)
-                    } else {
+                    } else if (action === 'change-role') {
                       setModalState({
                         ...modalState,
                         currentMember: member,
@@ -170,13 +159,13 @@ const OrganizationPage = () => {
 
       <ChangeRoleModal
         isOpen={modalState.changeRole}
-        onClose={() => setModalState(prev => ({ ...prev, changeRole: false }))}
+        onClose={() => setModalState(prev => ({ ...prev, changeRole: false, currentMember: null }))}
         member={modalState.currentMember}
         currentRole={modalState.currentMember?.role}
         onSave={(newRole) => {
           if (modalState.currentMember) {
             handleRoleChange(modalState.currentMember.id, newRole)
-            setModalState(prev => ({ ...prev, changeRole: false }))
+            setModalState(prev => ({ ...prev, changeRole: false, currentMember: null }))
           }
         }}
       />

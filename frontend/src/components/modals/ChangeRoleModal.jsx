@@ -5,9 +5,9 @@ import { XMarkIcon, UserIcon, ShieldCheckIcon, UsersIcon } from "@heroicons/reac
 const ChangeRoleModal = ({ isOpen, onClose, member, currentRole, onSave }) => {
   const [selectedRole, setSelectedRole] = useState(currentRole || "member")
   const roles = [
-    { value: "admin", label: "Admin", icon: ShieldCheckIcon, description: "Full access to all organization features" },
-    { value: "manager", label: "Manager", icon: UserIcon, description: "Can manage projects and members" },
-    { value: "member", label: "Member", icon: UsersIcon, description: "Can view and contribute to projects" }
+    { value: "Admin", label: "Admin", icon: ShieldCheckIcon, description: "Full access to all organization features" },
+    { value: "Manager", label: "Manager", icon: UserIcon, description: "Can manage projects and members" },
+    { value: "Member", label: "Member", icon: UsersIcon, description: "Can view and contribute to projects" }
   ]
 
   useEffect(() => {

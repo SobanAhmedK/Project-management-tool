@@ -20,6 +20,7 @@ import MembersSection from "@/components/sections/OrgSettingMembers"
 import InviteMemberModal from "@components/modals/InviteMemberModal"
 import ProjectModal from "@components/modals/ProjectEditModal"
 import ProjectsSection from "@/components/sections/OrgSettingProject"
+import {useAuth} from "@context/AuthContext"
 
 const OrganizationSettings = () => {
   const { orgId } = useParams()
@@ -34,6 +35,7 @@ const OrganizationSettings = () => {
     name: "",
     description: "",
   })
+  const { currentUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -195,64 +197,70 @@ const OrganizationSettings = () => {
   }
 
   const handleSaveProject = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+    e.preventDefault();
+    setIsLoading(true);
+  
     try {
       if (projectToEdit) {
-        // Edit existing project
+        // Update existing project
         const updatedProject = {
           ...projectToEdit,
           name: projectFormData.name,
           description: projectFormData.description,
-        }
-        console.log("Updating project with data:", updatedProject)
-        await updateProject(updatedProject)
-        setProjects(projects.map((p) => (p.id === updatedProject.id ? updatedProject : p)))
-        notify("Project updated successfully", "success")
+        };
+        console.log("Updating project with data:", updatedProject);
+        const result = await updateProject(updatedProject);
+        setProjects(projects.map((p) => (p.id === result.id ? result : p)));
+        notify("Project updated successfully", "success");
       } else {
         // Create new project
         if (!orgId) {
-          throw new Error("Organization ID is missing")
+          throw new Error("Organization ID is missing");
         }
         if (!organization) {
-          throw new Error("Organization data is not loaded")
+          throw new Error("Organization data is not loaded");
         }
+        
+        // Create a simpler project object with required fields
         const newProject = {
           name: projectFormData.name,
           description: projectFormData.description,
           organization: {
             id: orgId,
-            name: organization.name || "Unknown Organization",
+            name: organization.name,
           },
+          // Use a default user if currentUser is not properly structured
           created_by: {
-            id: "user1", // Mock user; replace with actual user context
-            full_name: "Current User",
-            email: "user@example.com",
+            id: "current_user",
+            full_name: "Current User"
           },
           members: [],
           tasks: [],
+        };
+        
+        console.log("Creating project with data:", newProject);
+        const createdProject = await addProject(newProject);
+        console.log("Created project:", createdProject);
+        
+        if (createdProject && createdProject.id && createdProject.name) {
+          setProjects([...projects, createdProject]);
+          notify("Project created successfully", "success");
+        } else {
+          throw new Error("Invalid project data returned from addProject");
         }
-        console.log("Creating project with data:", newProject)
-        const createdProject = await addProject(newProject)
-        console.log("Created project:", createdProject)
-        if (!createdProject || !createdProject.id || !createdProject.name) {
-          throw new Error("Invalid project data returned from addProject")
-        }
-        setProjects([...projects, createdProject])
-        notify("Project created successfully", "success")
       }
-      setIsProjectModalOpen(false)
-      setProjectFormData({ name: "", description: "" })
-      setProjectToEdit(null)
+      
+      // Reset form state
+      setIsProjectModalOpen(false);
+      setProjectFormData({ name: "", description: "" });
+      setProjectToEdit(null);
     } catch (error) {
-      console.error("Failed to create/update project:", error.message, error.stack)
-      notify(`Failed to ${projectToEdit ? "update" : "create"} project: ${error.message}`, "error")
+      console.error("Failed to create/update project:", error.message, error.stack);
+      notify(`Failed to ${projectToEdit ? "update" : "create"} project: ${error.message}`, "error");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
+  };
   const handleDeleteProject = async (projectId) => {
     setIsLoading(true)
     try {
