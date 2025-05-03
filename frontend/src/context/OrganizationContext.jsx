@@ -17,17 +17,20 @@ const mockOrganizations = [
       { id: "user7", name: "BOB", role: "Member" },
       { id: "user8", name: "Popye", role: "Member" },
     ],
+    isActive: true,
   },
   {
     id: "org2",
     name: "Development Team",
     description: "The development team responsible for coding",
     members: [{ id: "user1", name: "John Doe", role: "Admin" }],
+    isActive: true,
   },
 ]
 
 export const OrganizationProvider = ({ children }) => {
   const [organizations, setOrganizations] = useState(mockOrganizations)
+  const [currentOrganization, setCurrentOrganization] = useState(null)
 
   const getOrganizations = () => {
     return organizations
@@ -38,9 +41,18 @@ export const OrganizationProvider = ({ children }) => {
   }
 
   const addOrganization = (newOrg) => {
-    const updatedOrganizations = [...organizations, { ...newOrg, id: Date.now().toString() }]
+    // Create a new org with a generated ID
+    const orgWithId = { 
+      ...newOrg, 
+      id: `org${Date.now()}` 
+    }
+    
+    // Add the new org to the state
+    const updatedOrganizations = [...organizations, orgWithId]
     setOrganizations(updatedOrganizations)
-    return updatedOrganizations.find(org => org.id === newOrg.id)
+    
+    // Return the newly created org with its assigned ID
+    return orgWithId
   }
 
   const updateOrganization = (updatedOrg) => {
@@ -105,6 +117,9 @@ export const OrganizationProvider = ({ children }) => {
   }
 
   const value = {
+    organizations,
+    currentOrganization,
+    setCurrentOrganization,
     getOrganizations,
     getOrganization,
     addOrganization,

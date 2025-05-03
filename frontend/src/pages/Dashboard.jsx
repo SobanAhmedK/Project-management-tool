@@ -5,6 +5,7 @@ import { useProject } from "@context/ProjectContext"
 import { useOrganization } from "@context/OrganizationContext"
 import { useAuth } from "@context/AuthContext"
 import { formatDate, formatTime, getActivityDescription, getActivityIcon } from "@utils"
+
 import {
   HomeIcon as HomeIconV2,
   BriefcaseIcon as JobIconV2,
@@ -28,6 +29,7 @@ import {
 
 import Sidebar from "@components/layout/Sidebar"
 import Navbar from "@components/layout/Navbar"
+import OrganizationModal from "@components/modals/AddOrganizationModal"
 
 const Dashboard = () => {
   const { getProjects } = useProject()
@@ -36,8 +38,10 @@ const Dashboard = () => {
   const [projects, setProjects] = useState([])
   const [organizations, setOrganizations] = useState([])
   const [activeTab, setActiveTab] = useState("assigned") 
+  const [isOrgModalOpen, setIsOrgModalOpen] = useState(false)
   const location = useLocation()
   const projectsData = getProjects();
+  
   useEffect(() => {
     const loadData = async () => {
       const loadedProjects = getProjects() || []
@@ -46,7 +50,7 @@ const Dashboard = () => {
       setOrganizations(loadedOrgs)
     }
     loadData()
-  }, [getProjects, getOrganizations, location,projectsData])
+  }, [getProjects, getOrganizations, location, projectsData])
 
   // Memoized computations for better performance
   const { assignedTasks, createdTasks, recentActivity } = useMemo(() => {
@@ -154,6 +158,27 @@ const Dashboard = () => {
 
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
+            {/* Header with Add Organization Button */}
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">
+                {currentOrganization 
+                  ? `${currentOrganization.name} Dashboard` 
+                  : "Personal Dashboard"
+                }
+              </h1>
+              <Link 
+                to="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsOrgModalOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200"
+              >
+                <PlusIconV2 className="mr-2 h-5 w-5" />
+                Add Organization
+              </Link>
+            </div>
+            
             {/* Summary Cards */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -322,6 +347,9 @@ const Dashboard = () => {
           </div>
         </main>
       </div>
+     
+      <OrganizationModal isOpen={isOrgModalOpen} setIsOpen={setIsOrgModalOpen} />
+
     </div>
   )
 }

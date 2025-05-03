@@ -19,7 +19,7 @@ const mockProjects = [
       email: "john@example.com",
     },
     members: [
-      { id: "user1", full_name: "John Doe", role: "manager" },
+      { id: "user1", full_name: "John Doe", role: "Admin" },
       { id: "user2", full_name: "Jane Smith", role: "employee" },
       { id: "user3", full_name: "Jane Smith", role: "employee" },
     ],
@@ -73,7 +73,7 @@ const mockProjects = [
       id: "user1",
       full_name: "John Doe",
     },
-    members: [{ id: "user1", full_name: "John Doe", role: "admin" }],
+    members: [{ id: "user1", full_name: "John Doe", role: "Admin" }],
     tasks: [
       {
         id: "task3",

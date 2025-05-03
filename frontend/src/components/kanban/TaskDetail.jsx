@@ -19,25 +19,13 @@ import {
   ChatBubbleOvalLeftEllipsisIcon
 } from "@heroicons/react/24/outline"
 import { SparklesIcon, FireIcon, BoltIcon } from "@heroicons/react/24/solid"
-import { useProject } from "@context/ProjectContext" // Adjust import path as needed
-
-const Avatar = ({ name, size = "md" }) => {
-  const sizes = {
-    sm: "w-6 h-6 text-xs",
-    md: "w-8 h-8 text-sm",
-    lg: "w-10 h-10 text-base"
-  }
-  
-  return (
-    <div className={`flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-medium ${sizes[size]}`}>
-      {name}
-    </div>
-  )
-}
+import { useProject } from "@context/ProjectContext"
+import { useAuth } from "@context/AuthContext"
 
 const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
-  const { updateTask, getProject, currentUser } = useProject()
+  const { updateTask, getProject } = useProject()
   const [editMode, setEditMode] = useState(false)
+  const currentUser = useAuth()
   const [editedTask, setEditedTask] = useState({ ...task })
   const [comment, setComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -88,7 +76,6 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
     }
   }
 
-  // Update editedTask when task prop changes
   useEffect(() => {
     setEditedTask({ ...task })
   }, [task])
@@ -134,8 +121,7 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
       comment_text: comment,
       commented_by: { 
         id: currentUser.id, 
-        full_name: currentUser.full_name,
-        avatar: currentUser.avatar
+        full_name: currentUser.name
       },
       created_at: new Date().toISOString(),
     }
@@ -227,6 +213,7 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
                   onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
                 />
               ) : (
+                
                 <span className="truncate max-w-[80%] block">{task.title}</span>
               )}
             </h2>
@@ -348,8 +335,7 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
                           ...editedTask,
                           assigned_to: selectedMember ? { 
                             id: selectedMember.id, 
-                            full_name: selectedMember.full_name,
-                            avatar: selectedMember.avatar
+                            full_name: selectedMember.full_name
                           } : null
                         })
                       }}
@@ -365,7 +351,9 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
                     <div className="flex items-center text-sm px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700">
                       {task.assigned_to ? (
                         <>
-                          <Avatar name={task.assigned_to.avatar || task.assigned_to.full_name?.charAt(0)} size="sm" />
+                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-medium text-xs">
+                            {task.assigned_to.full_name?.charAt(0).toUpperCase() || '?'}
+                          </div>
                           <span className="ml-2 text-gray-700 dark:text-gray-200">{task.assigned_to.full_name}</span>
                         </>
                       ) : (
@@ -451,7 +439,9 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
                       transition={{ duration: 0.2 }}
                     >
                       <div className="flex items-start space-x-3">
-                        <Avatar name={comment.commented_by.avatar || comment.commented_by.full_name?.charAt(0)} size="sm" />
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-medium">
+                          {comment.commented_by.full_name?.charAt(0).toUpperCase() || '?'}
+                        </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
                             <div className="flex items-center space-x-2">
@@ -501,7 +491,9 @@ const TaskDetail = ({ task, onClose, onStatusChange, onTaskUpdate }) => {
               {/* Comment Form */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <Avatar name={currentUser.avatar || currentUser.full_name?.charAt(0)} size="sm" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-medium">
+                    {currentUser.name?.charAt(0).toUpperCase() || '?'}
+                  </div>
                   <div className="flex-1">
                     <textarea
                       className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 resize-none"
