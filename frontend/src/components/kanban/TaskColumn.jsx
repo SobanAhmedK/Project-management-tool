@@ -31,7 +31,7 @@ const TaskColumn = memo(
     const colors = getColumnColors();
 
     return (
-      <div className={`flex-1 ${colors.bg} rounded-xl shadow-sm border ${colors.border} flex flex-col min-w-[320px] max-w-sm`}>
+      <div className={`flex-1 ${colors.bg} rounded-xl shadow-sm border ${colors.border} flex flex-col min-w-[320px] max-w-sm h-[calc(100vh-180px)] min-h-[600px]`}>
         <h2 className={`font-semibold text-lg p-4 ${colors.header} sticky top-0 ${colors.bg} rounded-t-xl z-10 flex justify-between items-center border-b ${colors.border}`}>
           {column.title}
           <span className="text-sm font-normal bg-white border border-gray-200 px-2 py-1 rounded-full shadow-sm">
@@ -47,6 +47,7 @@ const TaskColumn = memo(
               className={`flex-1 transition-colors duration-100 rounded-b-xl p-3 overflow-y-auto ${
                 snapshot.isDraggingOver ? `${colors.dragHover}` : ""
               }`}
+              style={{ minHeight: '500px' }} // Added inline style for minimum height
             >
               {tasks.map((task, index) => (
                 <TaskCard

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@context/AuthContext";
 import { useNotification } from "@context/NotificationContext";
@@ -8,10 +9,21 @@ import NotificationModal from "@components/modals/NotificationModal";
 const Navbar = ({ title }) => {
   const { currentUser, logout } = useAuth();
   const { unreadCount } = useNotification();
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const profileRef = useRef(null);
+  const searchRef = useRef(null);
+
+  // Handle search submission
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      console.log("Searching for:", searchQuery);
+      setSearchQuery("");
+    }
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -32,19 +44,35 @@ const Navbar = ({ title }) => {
     };
   }, [isProfileOpen]);
 
+  // Handle logout
+  const handleLogout = async () => {
+    setIsProfileOpen(false);
+    await logout();
+    navigate("/login");
+  };
+
+  // Handle navigation to different profile pages
+  const handleProfileNavigation = (path) => {
+    setIsProfileOpen(false);
+    navigate(path);
+  };
+
   return (
     <>
-      <nav className="bg-white border-b border-gray-200 px-6 py-3 sticky top-0 z-[8888]">
+      <nav className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 sticky top-0 z-[100]">
         <div className="flex justify-between items-center">
-          <h1 
-            className={`text-2xl font-semibold text-cyan-500 font-[700] transition-all duration-300 ease-in-out mb-4 px-2 tracking-tight hover:scale-105 cursor-pointer`}
-          >
-            {title}
-          </h1>
+          <Link to="/dashboard">
+            <h1 
+              className="text-xl md:text-2xl font-semibold text-cyan-500 font-[800] transition-all duration-300 ease-in-out tracking-tight hover:scale-105 cursor-pointer"
+            >
+              {title}
+            </h1>
+          </Link>
 
-          <motion.div
+          <form 
             className="hidden md:flex items-center bg-white rounded-lg px-3 py-2 flex-1 max-w-xl mx-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-            whileHover={{ y: -1 }}
+            onSubmit={handleSearch}
+            ref={searchRef}
           >
             <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 mr-2" />
             <input
@@ -56,6 +84,7 @@ const Navbar = ({ title }) => {
             />
             {searchQuery && (
               <button 
+                type="button"
                 className="text-gray-400 hover:text-gray-600"
                 onClick={() => setSearchQuery("")}
               >
@@ -64,18 +93,21 @@ const Navbar = ({ title }) => {
                 </svg>
               </button>
             )}
-          </motion.div>
+          </form>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 relative"
+              className="relative p-2 rounded-full text-gray-500 hover:text-cyan-600 hover:bg-gray-100"
               onClick={() => setIsNotificationOpen(true)}
+              aria-label="Notifications"
             >
               <BellAlertIcon className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </motion.button>
 
@@ -84,9 +116,10 @@ const Navbar = ({ title }) => {
                 whileHover={{ scale: 1.05 }}
                 className="flex items-center space-x-2"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
+                aria-label="User menu"
               >
                 <div className="w-9 h-9 rounded-full bg-gradient-to-r from-cyan-100 to-indigo-100 flex items-center justify-center text-cyan-600 font-medium shadow-sm">
-                  {currentUser?.name?.charAt(0) || <UserIcon className="w-8 h-8 text-gray-500" />}
+                  {currentUser?.name?.charAt(0) || <UserIcon className="w-5 h-5 text-cyan-600" />}
                 </div>
                 <div className="hidden md:flex flex-col items-start">
                   <span className="text-sm font-medium text-gray-700">{currentUser?.name || "User"}</span>
@@ -107,26 +140,21 @@ const Navbar = ({ title }) => {
                       <p className="text-sm font-medium text-gray-900">{currentUser?.name || "User"}</p>
                       <p className="text-xs text-gray-500 truncate">{currentUser?.email || "user@example.com"}</p>
                     </div>
-                    <a 
-                      href="/profile" 
-                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => setIsProfileOpen(false)}
+                    <button 
+                      className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => handleProfileNavigation("/profile")}
                     >
                       Your Profile
-                    </a>
-                    <a 
-                      href="profile/settings" 
-                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => setIsProfileOpen(false)}
+                    </button>
+                    <button 
+                      className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => handleProfileNavigation("/profile/settings")}
                     >
                       Settings
-                    </a>
+                    </button>
                     <button
                       className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => {
-                        setIsProfileOpen(false);
-                        logout();
-                      }}
+                      onClick={handleLogout}
                     >
                       Sign out
                     </button>
@@ -138,7 +166,6 @@ const Navbar = ({ title }) => {
         </div>
       </nav>
 
-      {/* Notification Modal */}
       <NotificationModal 
         isOpen={isNotificationOpen} 
         onClose={() => setIsNotificationOpen(false)} 

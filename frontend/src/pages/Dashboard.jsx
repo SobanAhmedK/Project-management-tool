@@ -152,7 +152,7 @@ const Dashboard = () => {
         <Navbar 
           title={ 
           
-            " Dashboard"
+            " "
           } 
         />
 

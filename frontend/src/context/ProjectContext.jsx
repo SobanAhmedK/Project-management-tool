@@ -14,12 +14,12 @@ const mockProjects = [
       name: "Design Team",
     },
     created_by: {
-      id: "user1",
+      id: "user4",
       full_name: "John Doe",
       email: "john@example.com",
     },
     members: [
-      { id: "user1", full_name: "John Doe", role: "Admin" },
+      { id: "user1", full_name: "John Doe", role: "Employee" },
       { id: "user2", full_name: "Jane Smith", role: "employee" },
       { id: "user3", full_name: "Jane Smith", role: "employee" },
     ],
@@ -59,6 +59,20 @@ const mockProjects = [
         updated_at: "2023-06-17T09:00:00Z",
         comments: [],
       },
+      {
+        id: "task3",
+        title: "Design mockups",
+        description: "High-fidelity mockups based on wireframes",
+        status: "in_progress",
+        priority: "medium",
+        assigned_to: { id: "user2", full_name: "Jane Smith" },
+        created_by: { id: "user3", full_name: "John Doe" },
+        due_date: "2023-06-30",
+        order: 1,
+        created_at: "2023-06-16T09:00:00Z",
+        updated_at: "2023-06-17T09:00:00Z",
+        comments: [],
+      },
     ],
   },
   
@@ -74,7 +88,7 @@ const mockProjects = [
       id: "user1",
       full_name: "John Doe",
     },
-    members: [{ id: "user1", full_name: "John Doe", role: "Admin" }],
+    members: [{ id: "user1", full_name: "John Doe", role: "Member" }],
     tasks: [
       {
         id: "task3",
