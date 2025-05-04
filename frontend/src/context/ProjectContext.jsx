@@ -11,7 +11,7 @@ const mockProjects = [
     description: "Redesign the company website with a modern look and feel",
     organization: {
       id: "org1",
-      name: "Acme Corp",
+      name: "Design Team",
     },
     created_by: {
       id: "user1",
@@ -61,13 +61,14 @@ const mockProjects = [
       },
     ],
   },
+  
   {
     id: "project2",
     name: "Mobile App",
     description: "iOS and Android app development",
     organization: {
       id: "org2",
-      name: "TechFlow",
+      name: "Development Team",
     },
     created_by: {
       id: "user1",

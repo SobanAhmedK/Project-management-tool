@@ -114,7 +114,8 @@ const TaskCard = memo(({ task, index, onClick }) => {
     prevProps.task.title === nextProps.task.title &&
     prevProps.task.status === nextProps.task.status &&
     prevProps.task.priority === nextProps.task.priority &&
-    prevProps.index === nextProps.index;
+    prevProps.index === nextProps.index &&  
+    prevProps.task.comments === nextProps.task.comments;
 });
 
 export default TaskCard;

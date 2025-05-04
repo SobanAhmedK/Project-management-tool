@@ -11,8 +11,8 @@ import {
   ArrowUpIcon,
   ArrowDownIcon
 } from "@heroicons/react/24/outline"
-import { useProject } from "../../context/ProjectContext"
-import { useAuth } from "../../context/AuthContext"
+import { useProject } from "@/context/ProjectContext"
+import { useAuth } from "@/context/AuthContext"
 
 const AddTaskButton = ({ projectId }) => {
   const { addTask, getProject } = useProject()
@@ -62,8 +62,8 @@ const AddTaskButton = ({ projectId }) => {
 
   const statusOptions = [
     { value: "todo", label: "To Do", color: "bg-gray-100 text-gray-800" },
-    { value: "in-progress", label: "In Progress", color: "bg-blue-100 text-blue-800" },
-    { value: "done", label: "Done", color: "bg-green-100 text-green-800" }
+    { value: "in_progress", label: "In Progress", color: "bg-blue-100 text-blue-800" },
+    { value: "completed", label: "Done", color: "bg-green-100 text-green-800" }
   ]
 
   const handleSubmit = async (e) => {

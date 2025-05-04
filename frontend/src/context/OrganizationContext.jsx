@@ -100,6 +100,12 @@ export const OrganizationProvider = ({ children }) => {
     setOrganizations(updatedOrganizations)
     return updatedOrganizations.find(org => org.id === orgId)
   }
+  const setOrganization = (orgname) => {
+  setCurrentOrganization(orgname)
+  console.log("Current Organization:", orgname)
+
+  }
+
 
   const removeMember = (orgId, memberId) => {
     const updatedOrganizations = organizations.map((org) => {
@@ -119,7 +125,7 @@ export const OrganizationProvider = ({ children }) => {
   const value = {
     organizations,
     currentOrganization,
-    setCurrentOrganization,
+    setOrganization,
     getOrganizations,
     getOrganization,
     addOrganization,

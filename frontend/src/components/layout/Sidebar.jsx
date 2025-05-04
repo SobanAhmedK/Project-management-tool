@@ -19,7 +19,8 @@ import LOGO from "../../assets/LOGO.png"
 
 const Sidebar = () => {
   const location = useLocation()
-  const { orgId } = useParams()
+  const {currentOrganization, setOrganization} = useOrganization()
+  const { orgId, projectId } = useParams()
   const { currentUser } = useAuth()
   const { getProjects } = useProject()
   const { getOrganizations } = useOrganization()
@@ -114,7 +115,6 @@ const Sidebar = () => {
             </Link>
           </motion.li>
 
-          {/* Conversations */}
           <motion.li whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link
               to="/conversations"
@@ -165,9 +165,11 @@ const Sidebar = () => {
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Link
-                        to={`/project/${project.id}`}
+                        to={`/organization/${project.organization.id}/projects/${project.id}`}
+                        onClick={() => setOrganization(project.organization.name)
+                           }
                         className={`flex items-center px-3 py-1.5 rounded-md text-sm ${
-                          isActive(`/project/${project.id}`)
+                          projectId === project.id
                             ? "bg-indigo-50 text-indigo-600 font-medium"
                             : "text-gray-600 hover:bg-gray-50"
                         }`}
@@ -232,8 +234,7 @@ const Sidebar = () => {
                       <Link
                         to={`/organization/${org.id}`}
                         className={`flex items-center px-3 py-1.5 rounded-md text-sm ${
-                          location.pathname.startsWith(`/organization/${org.id}`) &&
-                          !location.pathname.includes('settings')
+                          orgId === org.id && !location.pathname.includes('settings')
                             ? "bg-cyan-50 text-cyan-600 font-medium"
                             : "text-gray-600 hover:bg-gray-50"
                         }`}
