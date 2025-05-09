@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { useAuth } from "../../context/AuthContext"
 import { useNotification } from "../../context/NotificationContext"
 import Button from "@/components/ui/Button"
+import LOGO from "@/assets/LOGO.png"
 
 const Signup = () => {
   const [name, setName] = useState("")
@@ -58,8 +59,7 @@ const Signup = () => {
         >
           <Link to="/" className="flex justify-center">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-              TaskSync<span className="text-indigo-600">.</span>
-            </h1>
+<img src={LOGO} alt="TaskSync"  className="w-40"/>            </h1>
           </Link>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             Create your account

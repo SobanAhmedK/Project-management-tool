@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
+from django.utils import timezone
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, full_name=None, **extra_fields):
         if not email:
@@ -169,3 +170,39 @@ class Comment(models.Model):
     comment_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    
+    
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('task_assigned', 'Task Assigned'),
+        ('task_updated', 'Task Updated'),
+        ('task_commented', 'Task Commented'),
+        ('status_changed', 'Task Status Changed'),
+        ('organization_invite', 'Organization Invite'),
+        ('chat_message', 'New Chat Message'),
+        ('video_call', 'Incoming Video Call'),
+    
+    )
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=True, blank=True)
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, null=True, blank=True)
+    task = models.ForeignKey('Task', on_delete=models.CASCADE, null=True, blank=True)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, null=True, blank=True)
+    chat_room = models.ForeignKey('ChatRoom', on_delete=models.CASCADE, null=True, blank=True)
+    video_call = models.ForeignKey('VideoCall', on_delete=models.CASCADE, null=True, blank=True)
+    
+    message = models.TextField(blank=True)
+    url = models.URLField(blank=True)  
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Notification to {self.recipient.email} - {self.notification_type}'

@@ -2,6 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import LOGO from "../../assets/LOGO.png";
 
 const Footer = () => {
   const footerLinks = [
@@ -44,7 +45,7 @@ const Footer = () => {
             >
               <Link to="/" className="flex items-center">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-                  TaskSync<span className="text-indigo-600">.</span>
+               <img src={LOGO} alt="TaskSync" className="w-40" />
                 </h1>
               </Link>
             </motion.div>

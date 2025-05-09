@@ -11,15 +11,15 @@ const mockProjects = [
     description: "Redesign the company website with a modern look and feel",
     organization: {
       id: "org1",
-      name: "Acme Corp",
+      name: "Design Team",
     },
     created_by: {
-      id: "user1",
+      id: "user4",
       full_name: "John Doe",
       email: "john@example.com",
     },
     members: [
-      { id: "user1", full_name: "John Doe", role: "manager" },
+      { id: "user1", full_name: "John Doe", role: "Admin" },
       { id: "user2", full_name: "Jane Smith", role: "employee" },
       { id: "user3", full_name: "Jane Smith", role: "employee" },
     ],
@@ -59,21 +59,36 @@ const mockProjects = [
         updated_at: "2023-06-17T09:00:00Z",
         comments: [],
       },
+      {
+        id: "task3",
+        title: "Design mockups",
+        description: "High-fidelity mockups based on wireframes",
+        status: "in_progress",
+        priority: "medium",
+        assigned_to: { id: "user2", full_name: "Jane Smith" },
+        created_by: { id: "user3", full_name: "John Doe" },
+        due_date: "2023-06-30",
+        order: 1,
+        created_at: "2023-06-16T09:00:00Z",
+        updated_at: "2023-06-17T09:00:00Z",
+        comments: [],
+      },
     ],
   },
+  
   {
     id: "project2",
     name: "Mobile App",
     description: "iOS and Android app development",
     organization: {
       id: "org2",
-      name: "TechFlow",
+      name: "Development Team",
     },
     created_by: {
       id: "user1",
       full_name: "John Doe",
     },
-    members: [{ id: "user1", full_name: "John Doe", role: "admin" }],
+    members: [{ id: "user1", full_name: "John Doe", role: "Admin" }],
     tasks: [
       {
         id: "task3",
