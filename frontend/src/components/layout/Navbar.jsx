@@ -63,7 +63,7 @@ const Navbar = ({ title }) => {
         <div className="flex justify-between items-center">
           <Link to="/dashboard">
             <h1 
-              className="text-xl md:text-2xl font-semibold text-cyan-500 font-[800] transition-all duration-300 ease-in-out tracking-tight hover:scale-105 cursor-pointer"
+              className="text-xl md:text-2xl font-semibold text-cyan-500 font-[900] transition-all duration-300 ease-in-out tracking-tight hover:scale-105 cursor-pointer"
             >
               {title}
             </h1>

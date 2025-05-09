@@ -119,14 +119,13 @@ const ProjectBoard = () => {
           updateTaskPositions(finishTaskIds, finishColumn.id),
         ]);
       }
-      setForceUpdate(prev => prev + 1); // Force re-render after drag
+      setForceUpdate(prev => prev + 1);
     },
     [columns, updateTaskStatus, updateTaskPositions]
   );
 
   const handleTaskClick = useCallback(
     (taskId) => {
-      // Always get the most current version of the task from the project
       const task = project?.tasks.find((t) => t.id === taskId);
       setSelectedTask(task);
     },
@@ -138,13 +137,10 @@ const ProjectBoard = () => {
   }, []);
 
   const handleTaskUpdate = useCallback((updatedTask) => {
-    // Update the local selectedTask state
     setSelectedTask(updatedTask);
     
-    // Trigger a refresh of the whole project data
     setForceUpdate(prev => prev + 1);
     
-    // If the task is currently selected, make sure we have the latest version
     if (selectedTask && selectedTask.id === updatedTask.id) {
       setSelectedTask(updatedTask);
     }
