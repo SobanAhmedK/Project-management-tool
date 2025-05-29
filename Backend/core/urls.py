@@ -6,13 +6,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/', include('ProjectManagementMono.api.v1.urls')), 
+    path('api/v1/', include([
+        path('', include('apps.users.api.v1.urls')),
+        path('', include('apps.organizations.api.v1.urls')),
+        path('', include('apps.projects.api.v1.urls')),
+        path('', include('apps.tasks.api.v1.urls')),
+        # path('', include('apps.communications.api.v1.urls')), 
+        path('', include('apps.notifications.api.v1.urls')), 
+    ])),
 ]
-
-# Swagger URLs
 urlpatterns += swagger_urls
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

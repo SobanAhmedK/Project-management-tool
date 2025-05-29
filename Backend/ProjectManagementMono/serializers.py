@@ -147,28 +147,6 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_email', 'user_full_name', 'role', 'joined_at']
 
 
-class TaskSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Task
-        # List all fields you want to expose via the API.
-        fields = [
-            'id',
-            'project',
-            'title',
-            'description',
-            'assigned_to',
-            'status',
-            'due_date',
-            'created_at',
-            'updated_at',
-            'created_by',
-            'priority',
-            'order'
-        ]
-        # These fields will be read-only (set automatically)
-        read_only_fields = ['created_at', 'updated_at', 'created_by']
-    
-    
 
 class ProjectMembershipSerializerDisplay(serializers.ModelSerializer):
     full_name = serializers.CharField(source='user.full_name', read_only=True)
@@ -190,6 +168,28 @@ class ProjectMembershipSerializerDisplay(serializers.ModelSerializer):
         except OrganizationMembership.DoesNotExist:
             return None
 
+
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        # List all fields you want to expose via the API.
+        fields = [
+            'id',
+            'project',
+            'title',
+            'description',
+            'assigned_to',
+            'status',
+            'due_date',
+            'created_at',
+            'updated_at',
+            'created_by',
+            'priority',
+            'order'
+        ]
+        # These fields will be read-only (set automatically)
+        read_only_fields = ['created_at', 'updated_at', 'created_by']
+    
 
 class CommentSerializer(serializers.ModelSerializer):
    
