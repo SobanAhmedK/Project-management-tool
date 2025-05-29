@@ -1,16 +1,22 @@
 // src/components/sections/LogoCloudSection.jsx
 import React from "react";
 import { motion } from "framer-motion";
+import airbnb from "@/assets/LogoCloud/airbnb.png";
+import microsoft from "@/assets/LogoCloud/microsoft.png";
+import slack from "@/assets/LogoCloud/slack.png";       
+import spotify from "@/assets/LogoCloud/spotify.png";
+import techcrunch from "@/assets/LogoCloud/techcrunch.png";
+import forbes from "@/assets/LogoCloud/forbes.png";
 
 const LogoCloudSection = () => {
-  // Array of company logos (using text for simplicity, but you can replace with actual logo images)
+  // Array of company logos with imported images
   const companies = [
-    { name: "TechCrunch", logo: "TechCrunch" },
-    { name: "Forbes", logo: "Forbes" },
-    { name: "Microsoft", logo: "Microsoft" },
-    { name: "Spotify", logo: "Spotify" },
-    { name: "Slack", logo: "Slack" },
-    { name: "Airbnb", logo: "Airbnb" }
+    { name: "TechCrunch", logo: techcrunch },
+    { name: "Forbes", logo: forbes },
+    { name: "Microsoft", logo: microsoft },
+    { name: "Spotify", logo: spotify },
+    { name: "Slack", logo: slack },
+    { name: "Airbnb", logo: airbnb }
   ];
 
   return (
@@ -20,7 +26,7 @@ const LogoCloudSection = () => {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
           className="text-center text-gray-500 text-sm font-medium mb-8"
         >
           TRUSTED BY REMOTE TEAMS AT
@@ -36,24 +42,18 @@ const LogoCloudSection = () => {
           {companies.map((company, index) => (
             <motion.div
               key={company.name}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 70 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               whileHover={{ scale: 1.05 }}
               className="flex justify-center"
             >
-              {/* For actual implementation, replace the div with an img tag */}
-              <div className="text-gray-400 hover:text-gray-600 text-xl font-bold transition-colors">
-                {company.logo}
-              </div>
-              {/* Actual image implementation would look like this:
               <img
-                src={`/path/to/${company.name.toLowerCase()}-logo.svg`}
+                src={company.logo}
                 alt={company.name}
-                className="h-8 object-contain opacity-70 hover:opacity-100 transition-opacity"
+                className="h-14 object-contain  hover:opacity-100 transition-opacity"
               />
-              */}
             </motion.div>
           ))}
         </motion.div>

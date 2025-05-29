@@ -1,7 +1,6 @@
-// src/components/sections/HeroSection.jsx
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { SparklesIcon } from '@heroicons/react/24/outline'; // ✅ This works in v2
+import { SparklesIcon } from '@heroicons/react/24/outline'; 
 import Button from "../ui/Button";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
@@ -49,34 +48,42 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4">
-            <Button
-              to="/signup"
-              variant="primary"
-              icon={<ArrowRightIcon className="w-5 h-5" />}
-              className="py-3.5"
-            >
-              Start Free Trial
-            </Button>
+          <Button
+    to="/signup"
+    variant="primary"
+    icon={<ArrowRightIcon className="w-5 h-5" />}
+    className="px-6 py-3.5 w-30 h-30 text-lg font-medium text-white bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+  >
+    Start Free Trial
+  </Button>
             
-            <Button
-              href="#demo"
-              variant="secondary"
-              className="py-3.5"
-            >
-              Watch Demo
-            </Button>
+  <Button
+    href="#demo"
+    variant="secondary"
+    className="px-6 py-3.5 w-25 h-30 text-lg font-medium text-cyan-600 bg-gray-100 rounded-xl hover:bg-gray-200 hover:text-cyan-700 transition-all duration-300"
+  >
+    Watch Demo
+  </Button>
           </div>
           
-          <div className="mt-8 flex flex-wrap justify-center md:justify-start gap-4">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <div key={star} className="flex items-center">
-                <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              </div>
-            ))}
-            <span className="text-gray-600 text-sm font-medium">Rated 4.9/5 by remote teams</span>
-          </div>
+        
+{/* Improved star rating section */}
+<div className="mt-8 flex flex-wrap items-center justify-center md:justify-start gap-2">
+  {/* Star icons in a more concise way */}
+  <div className="flex">
+    {[...Array(5)].map((_, i) => (
+      <svg 
+        key={i}
+        className="w-5 h-5 text-yellow-400" 
+        fill="currentColor" 
+        viewBox="0 0 20 20"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    ))}
+  </div>
+  <span className="text-gray-600 text-sm font-medium ml-1">Rated 4.9/5 by remote teams</span>
+</div>
         </motion.div>
         
         <motion.div

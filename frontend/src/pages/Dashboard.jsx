@@ -5,6 +5,7 @@ import { useProject } from "@context/ProjectContext"
 import { useOrganization } from "@context/OrganizationContext"
 import { useAuth } from "@context/AuthContext"
 import { formatDate, formatTime, getActivityDescription, getActivityIcon } from "@utils"
+
 import {
   HomeIcon as HomeIconV2,
   BriefcaseIcon as JobIconV2,
@@ -28,6 +29,7 @@ import {
 
 import Sidebar from "@components/layout/Sidebar"
 import Navbar from "@components/layout/Navbar"
+import OrganizationModal from "@components/modals/AddOrganizationModal"
 
 const Dashboard = () => {
   const { getProjects } = useProject()
@@ -36,8 +38,10 @@ const Dashboard = () => {
   const [projects, setProjects] = useState([])
   const [organizations, setOrganizations] = useState([])
   const [activeTab, setActiveTab] = useState("assigned") 
+  const [isOrgModalOpen, setIsOrgModalOpen] = useState(false)
   const location = useLocation()
   const projectsData = getProjects();
+  
   useEffect(() => {
     const loadData = async () => {
       const loadedProjects = getProjects() || []
@@ -46,7 +50,7 @@ const Dashboard = () => {
       setOrganizations(loadedOrgs)
     }
     loadData()
-  }, [getProjects, getOrganizations, location,projectsData])
+  }, [getProjects, getOrganizations, location, projectsData])
 
   // Memoized computations for better performance
   const { assignedTasks, createdTasks, recentActivity } = useMemo(() => {
@@ -146,14 +150,33 @@ const Dashboard = () => {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar 
-          title={currentOrganization 
-            ? `${currentOrganization.name} Dashboard` 
-            : "Personal Dashboard"
+          title={ 
+          
+            " "
           } 
         />
 
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">
+                { 
+                  "Personal Dashboard"
+                }
+              </h1>
+              <Link 
+                to="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsOrgModalOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200"
+              >
+                <PlusIconV2 className="mr-2 h-5 w-5" />
+                Add Organization
+              </Link>
+            </div>
+            
             {/* Summary Cards */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -322,6 +345,9 @@ const Dashboard = () => {
           </div>
         </main>
       </div>
+     
+      <OrganizationModal isOpen={isOrgModalOpen} setIsOpen={setIsOrgModalOpen} />
+
     </div>
   )
 }
@@ -361,87 +387,101 @@ const Tabs = ({ activeTab, setActiveTab, tabs }) => (
     </div>
   </div>
 )
+const TaskList = ({ tasks, getPriorityIcon, getStatusBadge, showCreator = false, showAssignee = false }) => {
+  const { setOrganization } = useOrganization();
 
-const TaskList = ({ tasks, getPriorityIcon, getStatusBadge, showCreator = false, showAssignee = false }) => (
-  <ul className="divide-y divide-gray-100">
-    {tasks.map((task) => (
-      <li 
-        key={task.id} 
-        className="p-4 hover:bg-gray-50 transition-colors duration-200"
-      >
-        <Link to={`/project/${task.projectId}/`} className="flex items-start">
-          <div className="mr-3 mt-0.5">{getPriorityIcon(task.priority)}</div>
-          <div className="flex-1">
-            <div className="flex justify-between">
-              <h3 className="text-sm font-medium text-gray-800">{task.title}</h3>
-              <div className="flex items-center space-x-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(task.status)}`}>
-                  {task.status.replace('_', ' ')}
-                </span>
-                {task.due_date && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                    {formatDate(task.due_date)}
+  return (
+    <ul className="divide-y divide-gray-100">
+      {tasks.map((task) => (
+        <li 
+          key={task.id} 
+          className="p-4 hover:bg-gray-50 transition-colors duration-200"
+        >
+          <Link 
+            to={`/organization/${task.organizationId}/projects/${task.projectId}`}
+            className="flex items-start"
+            onClick={() => setOrganization(task.organizationName || "")}
+          >
+            <div className="mr-3 mt-0.5">{getPriorityIcon(task.priority)}</div>
+            <div className="flex-1">
+              <div className="flex justify-between">
+                <h3 className="text-sm font-medium text-gray-800">{task.title}</h3>
+                <div className="flex items-center space-x-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(task.status)}`}>
+                    {task.status.replace('_', ' ')}
                   </span>
-                )}
+                  {task.due_date && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                      {formatDate(task.due_date)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {task.projectName || "Unknown project"}
+                {showCreator && task.created_by && ` • Created by: ${task.created_by.full_name}`}
+                {showAssignee && task.assigned_to && ` • Assigned to: ${task.assigned_to.full_name || 'Unassigned'}`}
+              </p>
+              {task.description && (
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {task.description}
+                </p>
+              )}
+            </div>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+};
+const ProjectList = ({ projects }) => {
+  const { setOrganization } = useOrganization();
+
+  return (
+    <ul className="divide-y divide-gray-100">
+      {projects.map((project) => (
+        <motion.li
+          key={project.id}
+          whileHover={{ x: 4 }}
+          className="p-4 hover:bg-gray-50 transition-colors duration-200"
+        >
+          <Link 
+            to={`/organization/${project.organization.id}/projects/${project.id}`}
+            className="flex items-start"
+            onClick={() => setOrganization(project.organization.name || "")}
+          >
+            <div className="mr-3 mt-0.5">
+              <div className="w-8 h-8 rounded-md bg-indigo-50 flex items-center justify-center">
+                <ViewBoardsIconV2 className="w-4 h-4 text-indigo-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {task.projectName || "Unknown project"}
-              {showCreator && task.created_by && ` • Created by: ${task.created_by.full_name}`}
-              {showAssignee && task.assigned_to && ` • Assigned to: ${task.assigned_to.full_name || 'Unassigned'}`}
-            </p>
-            {task.description && (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                {task.description}
+            <div className="flex-1">
+              <div className="flex justify-between">
+                <h3 className="text-sm font-medium text-gray-800">{project.name}</h3>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  project.status === "active"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-600"
+                }`}>
+                  {project.status || "active"}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {project.tasks.length} tasks • {project.members.length} members • 
+                Last updated {formatDate(project.updated_at || project.created_at)}
               </p>
-            )}
-          </div>
-        </Link>
-      </li>
-    ))}
-  </ul>
-)
-
-const ProjectList = ({ projects }) => (
-  <ul className="divide-y divide-gray-100">
-    {projects.map((project) => (
-      <li 
-        key={project.id} 
-        className="p-4 hover:bg-gray-50 transition-colors duration-200"
-      >
-        <Link to={`/project/${project.id}`} className="flex items-start">
-          <div className="mr-3 mt-0.5">
-            <div className="w-8 h-8 rounded-md bg-indigo-50 flex items-center justify-center">
-              <ViewBoardsIconV2 className="w-4 h-4 text-indigo-600" />
+              {project.description && (
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {project.description}
+                </p>
+              )}
             </div>
-          </div>
-          <div className="flex-1">
-            <div className="flex justify-between">
-              <h3 className="text-sm font-medium text-gray-800">{project.name}</h3>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                project.status === "active"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-600"
-              }`}>
-                {project.status || "active"}
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {project.tasks.length} tasks • {project.members.length} members • 
-              Last updated {formatDate(project.updated_at || project.created_at)}
-            </p>
-            {project.description && (
-              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                {project.description}
-              </p>
-            )}
-          </div>
-        </Link>
-      </li>
-    ))}
-  </ul>
-)
-
+          </Link>
+        </motion.li>
+      ))}
+    </ul>
+  );
+};
 const OrganizationList = ({ organizations }) => (
   <ul className="divide-y divide-gray-100">
     {organizations.map((org) => (
