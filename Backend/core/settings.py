@@ -44,8 +44,12 @@ INSTALLED_APPS = [
 ]
 
 
+CORS_ALLOW_ALL_ORIGINS = True  # For development only!
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -165,6 +169,7 @@ AUTH_USER_MODEL = 'ProjectManagementMono.User'
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
