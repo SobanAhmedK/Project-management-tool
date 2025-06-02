@@ -1,12 +1,13 @@
-import apiClient from './apiClient';
+import apiClient from '@api/ApiClient';
 
 export const authAPI = {
   login: (credentials) => {
-    return apiClient.post('/token/', credentials);
+    return apiClient.post('auth/login/', credentials);
   },
   
   register: (userData) => {
-    return apiClient.post('/register/', userData);
+    // Don't stringify here - apiClient already handles JSON
+    return apiClient.post('auth/register/', userData);
   },
   
   refreshToken: () => {
@@ -14,15 +15,15 @@ export const authAPI = {
     if (!refreshToken) {
       return Promise.reject(new Error('No refresh token available'));
     }
-    return apiClient.post('/token/refresh/', { refresh: refreshToken });
+    return apiClient.post('token/refresh/', { refresh: refreshToken });
   },
   
   verifyToken: (token) => {
-    return apiClient.post('/token/verify/', { token });
+    return apiClient.post('token/verify/', { token });
   },
   
   getUserInfo: () => {
-    return apiClient.get('/users/me/');
+    return apiClient.get('user/me/');
   },
   
   logout: () => {

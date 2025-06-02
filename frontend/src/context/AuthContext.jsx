@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { authAPI } from "@api/AuthApi";
 
@@ -42,21 +41,22 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
-      const tokens = await authAPI.login({ email, password });
+      const response = await authAPI.login({ email, password });
       
-      // Store tokens
-      localStorage.setItem('accessToken', tokens.access);
-      localStorage.setItem('refreshToken', tokens.refresh);
+      // Store tokens - response should contain tokens and user data
+      localStorage.setItem('accessToken', response.tokens.access);
+      localStorage.setItem('refreshToken', response.tokens.refresh);
       
-      // Get user info
-      const userData = await authAPI.getUserInfo();
+      // Get user info or use returned user data
+      const userData = response.user || await authAPI.getUserInfo();
       localStorage.setItem('userData', JSON.stringify(userData));
       setCurrentUser(userData);
       
       return userData;
     } catch (err) {
-      setError(err.message || 'Login failed');
-      throw err;
+      const errorMessage = err?.response?.data?.message || err.message || 'Login failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -67,12 +67,29 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
-      await authAPI.register(userData);
-      // After registration, automatically login
-      return login(userData.email, userData.password);
+      const response = await authAPI.register(userData);
+      
+      // If registration returns tokens directly, use them
+      if (response.tokens) {
+        localStorage.setItem('accessToken', response.tokens.access);
+        localStorage.setItem('refreshToken', response.tokens.refresh);
+        
+        const user = response.user || await authAPI.getUserInfo();
+        localStorage.setItem('userData', JSON.stringify(user));
+        setCurrentUser(user);
+        
+        return { user, tokens: response.tokens };
+      } else {
+        // If registration doesn't auto-login, login manually
+        return await login(userData.email, userData.password);
+      }
     } catch (err) {
-      setError(err.message || 'Registration failed');
-      throw err;
+      const errorMessage = err?.response?.data?.message || 
+                          err?.response?.data?.detail ||
+                          err?.message || 
+                          'Registration failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -92,8 +109,8 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     error,
     login,
-    register, // Make sure this is included in the context value
-    logout: handleLogout, // Consistent naming
+    register,
+    logout: handleLogout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
