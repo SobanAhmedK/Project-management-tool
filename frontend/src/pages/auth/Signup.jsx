@@ -15,7 +15,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const { signup } = useAuth()
+  const { register } = useAuth()
   const { notify } = useNotification()
   const navigate = useNavigate()
 
@@ -32,7 +32,7 @@ const Signup = () => {
     setIsLoading(true)
 
     try {
-      await signup(email, password, name)
+      await register(email, password, name)
       notify("Account created successfully!", "success")
       navigate("/dashboard")
     } catch (err) {
