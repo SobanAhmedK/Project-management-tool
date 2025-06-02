@@ -76,11 +76,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-<<<<<<< Updated upstream
-=======
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
->>>>>>> Stashed changes
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
