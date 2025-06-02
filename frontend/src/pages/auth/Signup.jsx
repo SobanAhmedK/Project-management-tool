@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
@@ -15,7 +14,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const { signup } = useAuth()
+  const { register } = useAuth()
   const { notify } = useNotification()
   const navigate = useNavigate()
 
@@ -29,14 +28,26 @@ const Signup = () => {
       return
     }
 
+    // Basic password validation
+    if (password.length < 0) {
+      setError("Password must be at least 6 characters long")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      await signup(email, password, name)
+      const response = await register({
+        email,
+        password,
+        full_name: name  // Map frontend's 'name' to backend's 'full_name'
+      })
+      
       notify("Account created successfully!", "success")
       navigate("/dashboard")
     } catch (err) {
-      setError(err.message)
+      console.error("Registration error:", err)
+      setError(err.message || "Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -59,7 +70,8 @@ const Signup = () => {
         >
           <Link to="/" className="flex justify-center">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-<img src={LOGO} alt="TaskSync"  className="w-40"/>            </h1>
+              <img src={LOGO} alt="TaskSync" className="w-40"/>            
+            </h1>
           </Link>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             Create your account
