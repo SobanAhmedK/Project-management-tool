@@ -1,19 +1,14 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authAPI } from "@api/AuthApi";
 
-// Create context
-const AuthContext = createContext()
-
-// Mock user data - in a real app, this would come from an API
-const mockUsers = [
-  { id: "user1", email: "user@example.com", password: "password", name: "John Doe" },
-  { id: "user2", email: "admin@example.com", password: "password", name: "Jane Smith" },
-]
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
       const accessToken = localStorage.getItem('accessToken');
@@ -65,8 +60,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-    setIsLoading(false)
-  }, [])
+  };
 
   const register = async (userData) => {
     setIsLoading(true);
@@ -113,14 +107,19 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     isLoading,
+    error,
     login,
     register,
     logout: handleLogout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
 export const useAuth = () => {
-  return useContext(AuthContext)
-}
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
