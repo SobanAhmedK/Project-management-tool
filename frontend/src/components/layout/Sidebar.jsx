@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline"
 import { useProject } from "@context/ProjectContext"
 import { useOrganization } from "@context/OrganizationContext"
+
 import { useAuth } from "@context/AuthContext"
 
 const Sidebar = () => {
