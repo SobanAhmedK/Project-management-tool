@@ -11,25 +11,48 @@ import {
   ArrowUpIcon,
   ArrowDownIcon
 } from "@heroicons/react/24/outline"
-import { useProject } from "../../context/ProjectContext"
+import { useProject } from "@/context/ProjectContext"
+import { useAuth } from "@/context/AuthContext"
 
 const AddTaskButton = ({ projectId }) => {
   const { addTask, getProject } = useProject()
+  const { currentUser } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    status: "todo",
-    priority: "medium",
-    assigned_to: null,
-    due_date: "",
-  })
   const [expandedSection, setExpandedSection] = useState("basic")
 
   const project = getProject(projectId)
   const members = project?.members || []
+
+  // Improved state management with single handler
+  const [taskData, setTaskData] = useState({
+    title: "",
+    description: "",
+    status: "todo",
+    priority: "medium",
+    assigned_to: currentUser ? { 
+      id: currentUser.id, 
+      full_name: currentUser.full_name 
+    } : null,
+    due_date: "",
+  })
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setTaskData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleMemberSelect = (e) => {
+    const selectedMember = members.find(m => m.id === e.target.value)
+    setTaskData(prev => ({
+      ...prev,
+      assigned_to: selectedMember ? { 
+        id: selectedMember.id, 
+        full_name: selectedMember.full_name 
+      } : null
+    }))
+  }
 
   const priorityOptions = [
     { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
@@ -39,23 +62,28 @@ const AddTaskButton = ({ projectId }) => {
 
   const statusOptions = [
     { value: "todo", label: "To Do", color: "bg-gray-100 text-gray-800" },
-    { value: "in-progress", label: "In Progress", color: "bg-blue-100 text-blue-800" },
-    { value: "done", label: "Done", color: "bg-green-100 text-green-800" }
+    { value: "in_progress", label: "In Progress", color: "bg-blue-100 text-blue-800" },
+    { value: "completed", label: "Done", color: "bg-green-100 text-green-800" }
   ]
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!newTask.title.trim()) return
+    if (!taskData.title.trim()) return
 
     setIsSubmitting(true)
 
     try {
       await addTask(projectId, {
-        ...newTask,
+        ...taskData,
         id: Date.now().toString(),
         created_at: new Date().toISOString(),
         order: project?.tasks?.length || 0,
+        created_by: {
+          id: currentUser?.id || "user1",
+          full_name: currentUser?.name || "Current User",
+        },
+        updated_at: new Date().toISOString()
       })
 
       setIsSuccess(true)
@@ -64,12 +92,15 @@ const AddTaskButton = ({ projectId }) => {
         setIsSubmitting(false)
         setIsSuccess(false)
         setIsModalOpen(false)
-        setNewTask({
+        setTaskData({
           title: "",
           description: "",
           status: "todo",
           priority: "medium",
-          assigned_to: null,
+          assigned_to: currentUser ? { 
+            id: currentUser.id, 
+            full_name: currentUser.full_name 
+          } : null,
           due_date: "",
         })
         setExpandedSection("basic")
@@ -86,7 +117,7 @@ const AddTaskButton = ({ projectId }) => {
 
   return (
     <>
-      {/* Floating Add Button */}
+      {/* Floating Add Button - Keeping your beautiful design */}
       <motion.button
         className="z-[9999] fixed bottom-6 right-6 z-40 p-4 bg-gradient-to-r from-cyan-400 to-indigo-800 text-white rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center"
         whileHover={{ scale: 1.1, rotate: 180 }}
@@ -95,9 +126,9 @@ const AddTaskButton = ({ projectId }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300 }}
-      > <div className="font-bold">Add Task </div>
+      > 
+        <div className="font-bold">Add Task </div>
         <PlusIcon className="w-6 h-6" />
-
       </motion.button>
 
       <AnimatePresence>
@@ -169,9 +200,10 @@ const AddTaskButton = ({ projectId }) => {
                     <div className="relative">
                       <input
                         type="text"
+                        name="title"
                         className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pl-10"
-                        value={newTask.title}
-                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                        value={taskData.title}
+                        onChange={handleChange}
                         placeholder="What needs to be done?"
                         required
                         disabled={isSubmitting}
@@ -184,9 +216,10 @@ const AddTaskButton = ({ projectId }) => {
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                     <textarea
+                      name="description"
                       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition min-h-[100px]"
-                      value={newTask.description}
-                      onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                      value={taskData.description}
+                      onChange={handleChange}
                       placeholder="Add details (optional)"
                       disabled={isSubmitting}
                     />
@@ -208,9 +241,10 @@ const AddTaskButton = ({ projectId }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                       <div className="relative">
                         <select
+                          name="status"
                           className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
-                          value={newTask.status}
-                          onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                          value={taskData.status}
+                          onChange={handleChange}
                           disabled={isSubmitting}
                         >
                           {statusOptions.map(option => (
@@ -225,9 +259,10 @@ const AddTaskButton = ({ projectId }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
                       <div className="relative">
                         <select
+                          name="priority"
                           className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
-                          value={newTask.priority}
-                          onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                          value={taskData.priority}
+                          onChange={handleChange}
                           disabled={isSubmitting}
                         >
                           {priorityOptions.map(option => (
@@ -255,28 +290,19 @@ const AddTaskButton = ({ projectId }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
                       <div className="relative">
                         <select
-                          className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
-                          value={newTask.assigned_to?.id || ""}
-                          onChange={(e) => {
-                            const selectedMember = members.find(m => m.id === e.target.value)
-                            setNewTask({
-                              ...newTask,
-                              assigned_to: selectedMember ? { 
-                                id: selectedMember.id, 
-                                full_name: selectedMember.full_name 
-                              } : null
-                            })
-                          }}
+                          className="w-full pt-3.5 p-3 pl-9 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white transition pr-8"
+                          value={taskData.assigned_to?.id || ""}
+                          onChange={handleMemberSelect}
                           disabled={isSubmitting}
                         >
-                          <option value="">&nbsp;&nbsp;&nbsp;Unassigned</option>
+                          <option value="">Unassigned</option>
                           {members.map(member => (
                             <option key={member.id} value={member.id}>
-                             &nbsp;&nbsp;&nbsp; {member.full_name}
+                              {member.full_name}
                             </option>
                           ))}
                         </select>
-                        <UserCircleIcon className="absolute  left-1.5 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
+                        <UserCircleIcon className="absolute left-2 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
 
@@ -285,9 +311,10 @@ const AddTaskButton = ({ projectId }) => {
                       <div className="relative">
                         <input
                           type="date"
+                          name="due_date"
                           className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pl-10"
-                          value={newTask.due_date}
-                          onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                          value={taskData.due_date}
+                          onChange={handleChange}
                           disabled={isSubmitting}
                         />
                         <CalendarDaysIcon className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -349,11 +376,13 @@ const AddTaskButton = ({ projectId }) => {
                     <motion.button
                       type="button"
                       className="px-6 py-3 bg-blue-500 text-white font-medium rounded-xl flex items-center justify-center shadow-md hover:bg-blue-600"
-                      onClick={() => {
-                        const sections = ["basic", "details", "assign"]
-                        const currentIndex = sections.indexOf(expandedSection)
-                        const nextSection = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : null
-                        if (nextSection) setExpandedSection(nextSection)
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const sections = ["basic", "details", "assign"];
+                        const currentIndex = sections.indexOf(expandedSection);
+                        const nextSection = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : null;
+                        if (nextSection) setExpandedSection(nextSection);
                       }}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}

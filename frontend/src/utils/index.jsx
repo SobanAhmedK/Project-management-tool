@@ -1,4 +1,3 @@
-// Create a utils directory with some helper functions
 import React from "react"
 import { 
   CheckCircleIcon, 

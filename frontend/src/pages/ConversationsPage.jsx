@@ -26,13 +26,11 @@ const Conversations = () => {
   const messagesEndRef = useRef(null)
   const messageInputRef = useRef(null)
 
-  // Load conversations and keep them in sync
   useEffect(() => {
     const loadConversations = async () => {
       const loadedConversations = getConversations() || []
       setConversations(loadedConversations)
       
-      // Update selected conversation if it exists
       if (selectedConversation) {
         const updatedConv = loadedConversations.find(
           conv => conv.id === selectedConversation.id
@@ -45,12 +43,10 @@ const Conversations = () => {
     loadConversations()
   }, [getConversations])
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [selectedConversation?.messages])
 
-  // Auto-focus input when conversation is selected
   useEffect(() => {
     if (selectedConversation) {
       messageInputRef.current?.focus()
@@ -84,7 +80,6 @@ const Conversations = () => {
       await sendMessage(selectedConversation.id, messageText)
     } catch (error) {
       console.error("Failed to send message:", error)
-      // Remove the temporary message if sending failed
       setSelectedConversation(prev => ({
         ...prev,
         messages: prev.messages.filter(msg => msg.id !== tempMessage.id)
@@ -92,7 +87,6 @@ const Conversations = () => {
       setMessageText(messageText) // Restore the message text
     } finally {
       setIsSending(false)
-      // Return focus to input after sending
       messageInputRef.current?.focus()
     }
   }
@@ -163,10 +157,13 @@ const Conversations = () => {
                     return (
                       <motion.li
                         key={conv.id}
-                        whileHover={{ backgroundColor: "#f9fafb" }}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
                         onClick={() => setSelectedConversation(conv)}
-                        className={`p-3 cursor-pointer transition-colors ${
-                          selectedConversation?.id === conv.id ? "bg-cyan-50" : ""
+                        className={`p-3 cursor-pointer transition-all duration-200 ease-in-out ${
+                          selectedConversation?.id === conv.id 
+                            ? "bg-cyan-50" 
+                            : "bg-white hover:bg-gray-50"
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -243,7 +240,7 @@ const Conversations = () => {
                         </p>
                       </div>
                     </div>
-                    <button className="p-1 rounded-full hover:bg-gray-100">
+                    <button className="p-1 rounded-full hover:bg-gray-100 transition-colors duration-200">
                       <EllipsisVerticalIcon className="w-5 h-5 text-gray-400" />
                     </button>
                   </div>
@@ -301,7 +298,7 @@ const Conversations = () => {
                         whileTap={{ scale: 0.95 }}
                         type="submit"
                         disabled={!messageText.trim() || isSending}
-                        className={`p-3 rounded-xl flex items-center justify-center ${
+                        className={`p-3 rounded-xl flex items-center justify-center transition-colors duration-200 ${
                           messageText.trim() && !isSending
                             ? 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-white'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed'

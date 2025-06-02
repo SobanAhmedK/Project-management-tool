@@ -1,5 +1,4 @@
-"use client"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import { AnimatePresence } from "framer-motion"
 
 // Using path aliases for cleaner imports
@@ -24,6 +23,116 @@ import { OrganizationProvider } from "@context/OrganizationContext"
 import { NotificationProvider } from "@context/NotificationContext"
 import { ConversationProvider } from "@context/ConversationContext"
 
+// Simplified layout component for protected routes
+const ProtectedLayout = ({ children }) => {
+  return (
+    <div className="min-h-screen">
+      <main>{children}</main>
+    </div>
+  )
+}
+
+// AppContent component to handle the AnimatePresence
+const AppContent = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <Dashboard />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/:orgId"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <OrganizationPage />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/:orgId/settings"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <OrganizationSettings />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/:orgId/projects/:projectId"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <ProjectBoard />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conversations"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <Conversations />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/settings"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <ProfileSettings />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/:userId"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <Profile />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout>
+                <Profile />
+              </ProtectedLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback Route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <Router>
@@ -32,83 +141,7 @@ function App() {
           <OrganizationProvider>
             <ProjectProvider>
               <NotificationProvider>
-                <AnimatePresence mode="wait">
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-
-                    {/* Protected Routes */}
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/organization/:orgId"
-                      element={
-                        <ProtectedRoute>
-                          <OrganizationPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/organization/:orgId/settings"
-                      element={
-                        <ProtectedRoute>
-                          <OrganizationSettings />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/project/:projectId"
-                      element={
-                        <ProtectedRoute>
-                          <ProjectBoard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/conversations"
-                      element={
-                        <ProtectedRoute>
-                          <Conversations />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile/settings"
-                      element={
-                        <ProtectedRoute>
-                          <ProfileSettings />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile/:userId"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* Fallback Route */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </AnimatePresence>
+                <AppContent />
               </NotificationProvider>
             </ProjectProvider>
           </OrganizationProvider>

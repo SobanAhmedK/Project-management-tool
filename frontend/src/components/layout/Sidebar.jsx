@@ -16,10 +16,12 @@ import { useProject } from "@context/ProjectContext"
 import { useOrganization } from "@context/OrganizationContext"
 
 import { useAuth } from "@context/AuthContext"
+import LOGO from "../../assets/LOGO.png"
 
 const Sidebar = () => {
   const location = useLocation()
-  const { orgId } = useParams()
+  const {currentOrganization, setOrganization} = useOrganization()
+  const { orgId, projectId } = useParams()
   const { currentUser } = useAuth()
   const { getProjects } = useProject()
   const { getOrganizations } = useOrganization()
@@ -79,9 +81,9 @@ const Sidebar = () => {
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         {!isCollapsed && (
           <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-              TaskSync<span className="text-indigo-600">.</span>
-            </h1>
+            <Link to="/dashboard" className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
+            <img src={LOGO} alt="TaskSync" className="w-40 " />
+            </Link>
           </motion.div>
         )}
         <button
@@ -109,12 +111,11 @@ const Sidebar = () => {
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              <HomeIcon className="w-5 h-5 mr-3" />
+              <HomeIcon className="w-5 h-5 mr-3 text-cyan-500" />
               {!isCollapsed && <span>Dashboard</span>}
             </Link>
           </motion.li>
 
-          {/* Conversations */}
           <motion.li whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link
               to="/conversations"
@@ -124,7 +125,7 @@ const Sidebar = () => {
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              <ChatIcon className="w-5 h-5 mr-3" />
+              <ChatIcon className="w-5 h-5 mr-3 text-blue-500 " />
               {!isCollapsed && <span>Conversations</span>}
             </Link>
           </motion.li>
@@ -138,7 +139,7 @@ const Sidebar = () => {
               }`}
             >
               <div className="flex items-center">
-                <ViewBoardsIcon className="w-5 h-5 mr-3" />
+                <ViewBoardsIcon className="w-5 h-5 mr-3 text-green-500" />
                 {!isCollapsed && <span>Projects ({allProjects.length})</span>}
               </div>
               {!isCollapsed && (
@@ -165,9 +166,11 @@ const Sidebar = () => {
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Link
-                        to={`/project/${project.id}`}
+                        to={`/organization/${project.organization.id}/projects/${project.id}`}
+                        onClick={() => setOrganization(project.organization.name)
+                           }
                         className={`flex items-center px-3 py-1.5 rounded-md text-sm ${
-                          isActive(`/project/${project.id}`)
+                          projectId === project.id
                             ? "bg-indigo-50 text-indigo-600 font-medium"
                             : "text-gray-600 hover:bg-gray-50"
                         }`}
@@ -203,7 +206,7 @@ const Sidebar = () => {
               }`}
             >
               <div className="flex items-center">
-                <OrganizationIcon className="w-5 h-5 mr-3" />
+                <OrganizationIcon className="w-5 h-5 mr-3 text-pink-500" />
                 {!isCollapsed && <span>Organizations ({allOrganizations.length})</span>}
               </div>
               {!isCollapsed && (
@@ -232,8 +235,7 @@ const Sidebar = () => {
                       <Link
                         to={`/organization/${org.id}`}
                         className={`flex items-center px-3 py-1.5 rounded-md text-sm ${
-                          location.pathname.startsWith(`/organization/${org.id}`) &&
-                          !location.pathname.includes('settings')
+                          orgId === org.id && !location.pathname.includes('settings')
                             ? "bg-cyan-50 text-cyan-600 font-medium"
                             : "text-gray-600 hover:bg-gray-50"
                         }`}

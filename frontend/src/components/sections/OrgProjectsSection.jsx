@@ -8,46 +8,57 @@ import {
 } from "@heroicons/react/24/outline";
 import EmptyState from "@components/ui/EmptyState";
 import AddProjectModal from "@components/modals/AddProjectModal";
+import { Link } from "react-router-dom";
+import { useOrganization } from "@/context/OrganizationContext";
 
-const ProjectItem = ({ project }) => (
-  <motion.li
-    whileHover={{ x: 4 }}
-    className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors"
-  >
-    <a href={`/project/${project.id}`} className="block">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-medium text-gray-800">{project.name}</h3>
-          <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-            {project.description}
-          </p>
+const ProjectItem = ({ project }) => {
+  const { getOrganization, setOrganization } = useOrganization();
+  
+
+  return (
+    <motion.li
+      whileHover={{ x: 4 }}
+      className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+    >
+      <Link 
+        to={`/organization/${project.orgId}/projects/${project.id}`} 
+        className="block"
+        onClick={() => setOrganization(project.organization.name || "")}
+      >
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-medium text-gray-800">{project.name}</h3>
+            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+              {project.description}
+            </p>
+          </div>
+          <ArrowRightIcon className="w-5 h-5 text-gray-400" />
         </div>
-        <ArrowRightIcon className="w-5 h-5 text-gray-400" />
-      </div>
-      <div className="flex justify-between items-center mt-4">
-        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-          {project.tasks.length} tasks
-        </span>
-        <div className="flex -space-x-2">
-          {project.members.slice(0, 3).map((member) => (
-            <div
-              key={member.id}
-              className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs border-2 border-white"
-              title={member.full_name}
-            >
-              {member.full_name.charAt(0)}
-            </div>
-          ))}
-          {project.members.length > 3 && (
-            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs border-2 border-white">
-              +{project.members.length - 3}
-            </div>
-          )}
+        <div className="flex justify-between items-center mt-4">
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+            {project.tasks.length} tasks
+          </span>
+          <div className="flex -space-x-2">
+            {project.members.slice(0, 3).map((member) => (
+              <div
+                key={member.id}
+                className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs border-2 border-white"
+                title={member.full_name}
+              >
+                {member.full_name.charAt(0)}
+              </div>
+            ))}
+            {project.members.length > 3 && (
+              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs border-2 border-white">
+                +{project.members.length - 3}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </a>
-  </motion.li>
-);
+      </Link>
+    </motion.li>
+  );
+};
 
 const ProjectCard = ({ projects, orgId }) => {
   const [showAll, setShowAll] = useState(false);

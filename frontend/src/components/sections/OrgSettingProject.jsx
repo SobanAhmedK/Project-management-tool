@@ -8,10 +8,10 @@ import {
 } from "@heroicons/react/24/outline"
 
 const OrgSettingProject = ({ projects, onAddProject, onEditProject, onDeleteProject }) => {
-  const [visibleCount, setVisibleCount] = useState(2) // Show 2 projects initially
+  const [visibleCount, setVisibleCount] = useState(2) 
 
   const handleViewMore = () => {
-    setVisibleCount((prev) => prev + 2) // Load next 2 projects
+    setVisibleCount((prev) => prev + 2) 
   }
 
   return (

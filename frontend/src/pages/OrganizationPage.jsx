@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
@@ -21,7 +20,6 @@ const OrganizationPage = () => {
   const { getOrganization, updateMemberRole, removeMember } = useOrganization()
   const { getProjects } = useProject()
   const organization = getOrganization(orgId)
-  
   const allProjects = getProjects()
   const projects = allProjects.filter(
     project => project.organization?.id === orgId
