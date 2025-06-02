@@ -76,7 +76,7 @@ const OrganizationModal = ({ isOpen, setIsOpen }) => {
         description: formData.description.trim(),
         created_by: currentUser,
         created_at: new Date().toISOString(),
-        members: [{ id: currentUser, name: currentUser.name, role: "Admin" }],
+        members: [{ id: currentUser, name: currentUser.full_name, role: "Admin" }],
         isActive: true,
         projects: []
       }

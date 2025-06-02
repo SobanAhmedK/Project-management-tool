@@ -44,8 +44,8 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login({ email, password });
       
       // Store tokens - response should contain tokens and user data
-      localStorage.setItem('accessToken', response.tokens.access);
-      localStorage.setItem('refreshToken', response.tokens.refresh);
+      localStorage.setItem('accessToken', response.access);
+      localStorage.setItem('refreshToken', response.refresh);
       
       // Get user info or use returned user data
       const userData = response.user || await authAPI.getUserInfo();

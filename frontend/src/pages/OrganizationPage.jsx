@@ -20,6 +20,7 @@ const OrganizationPage = () => {
   const { getOrganization, updateMemberRole, removeMember } = useOrganization()
   const { getProjects } = useProject()
   const organization = getOrganization(orgId)
+  
   const allProjects = getProjects()
   const projects = allProjects.filter(
     project => project.organization?.id === orgId
